@@ -60,3 +60,5 @@ deactivate
 
 - `python -m pip list` — show installed packages
 - `python manage.py migrate` — apply migrations (run after adding `'tastypie'` to `INSTALLED_APPS`)
+
+claude --resume 58805582-c09a-4c31-ad13-306005f5d0b6
