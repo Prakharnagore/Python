@@ -1,0 +1,2394 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Django Fast Track</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: fixed left syllabus rail + reading column; each module is a "lesson sheet" with What/Why/When/How grid, diagram, code, traps, interview cards. */
+:root {
+  --bg: #F4F7F5;
+  --surface: #FFFFFF;
+  --ink: #13201A;
+  --muted: #55655D;
+  --line: #D9E2DC;
+  --accent: #0B6B47;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #E2F1E9;
+  --warn: #8A5300;
+  --warn-soft: #FBEFD9;
+  --info-soft: #E8EEF8;
+  --info: #284B8C;
+  --code-bg: #0F1D17;
+  --code-fg: #D8E8DF;
+  --code-dim: #7F9A8C;
+  --code-key: #7FD6A8;
+  --font-display: "Bricolage Grotesque", "Avenir Next", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SF Mono", Menlo, monospace;
+  --rail: 288px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1411; --surface: #131E19; --ink: #E2ECE6; --muted: #9AACA2; --line: #25332C;
+    --accent: #4CC48F; --accent-ink: #06130D; --accent-soft: #15302A; --warn: #E6AB4C; --warn-soft: #2D2313;
+    --info-soft: #18233A; --info: #9DB8F0; --code-bg: #07100C; --code-fg: #D4E5DB; --code-dim: #6E8A7C; --code-key: #7FD6A8;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C1411; --surface: #131E19; --ink: #E2ECE6; --muted: #9AACA2; --line: #25332C;
+  --accent: #4CC48F; --accent-ink: #06130D; --accent-soft: #15302A; --warn: #E6AB4C; --warn-soft: #2D2313;
+  --info-soft: #18233A; --info: #9DB8F0; --code-bg: #07100C; --code-fg: #D4E5DB; --code-dim: #6E8A7C; --code-key: #7FD6A8;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; scroll-padding-top: 72px; }
+@media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+body {
+  background: var(--bg); color: var(--ink);
+  font: 16px/1.6 var(--font-body);
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 30; background: var(--surface); }
+a { color: var(--accent); }
+a:focus-visible, button:focus-visible, input:focus-visible, summary:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* Top bar */
+.topbar {
+  position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+  background: var(--surface); border-bottom: 1px solid var(--line);
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 10px;
+  display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+}
+.brand { font-family: var(--font-display); font-weight: 800; font-size: 1.15rem; letter-spacing: -0.01em; white-space: nowrap; }
+.brand span { color: var(--accent); }
+.progress { flex: 1 1 220px; display: flex; align-items: center; gap: 10px; min-width: 0; }
+.bar { flex: 1; height: 8px; background: var(--line); border-radius: 99px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .3s; }
+.progress-label { font-size: .85rem; color: var(--muted); white-space: nowrap; font-variant-numeric: tabular-nums; }
+.btn {
+  font: 500 .85rem var(--font-body); color: var(--ink); background: var(--bg);
+  border: 1px solid var(--line); border-radius: 8px; padding: 6px 12px; cursor: pointer;
+}
+.btn:hover { border-color: var(--accent); }
+.menu-btn { display: none; }
+
+/* Shell */
+.shell { display: grid; grid-template-columns: var(--rail) minmax(0, 1fr); }
+.rail {
+  position: sticky; top: calc(env(safe-area-inset-top, 0px) + 57px); height: calc(100vh - 57px - env(safe-area-inset-top, 0px));
+  overflow-y: auto; border-right: 1px solid var(--line); background: var(--surface);
+  padding: 16px 12px 40px max(12px, env(safe-area-inset-left, 0px));
+}
+.rail h2 { font: 600 .72rem var(--font-body); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); margin: 6px 10px 8px; }
+.rail ol { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
+.rail a {
+  display: grid; grid-template-columns: 28px 1fr 18px; align-items: center; gap: 6px;
+  padding: 6px 10px; border-radius: 8px; color: var(--ink); text-decoration: none; font-size: .9rem; line-height: 1.3;
+}
+.rail a:hover { background: var(--bg); }
+.rail a.active { background: var(--accent-soft); color: var(--ink); font-weight: 600; }
+.rail .n { font: 500 .75rem var(--font-mono); color: var(--muted); }
+.rail .tick { width: 16px; height: 16px; border-radius: 50%; border: 1.5px solid var(--line); }
+.rail a.done .tick { background: var(--accent); border-color: var(--accent); box-shadow: inset 0 0 0 3px var(--surface); }
+.rail .group { font: 600 .7rem var(--font-body); text-transform: uppercase; letter-spacing: .1em; color: var(--muted); padding: 14px 10px 4px; }
+
+main {
+  min-width: 0;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 80px;
+}
+.col { max-width: 860px; margin: 0 auto; display: grid; gap: 28px; }
+
+/* Hero */
+.hero { display: grid; gap: 12px; padding-block: 8px 4px; }
+.eyebrow { font: 600 .75rem var(--font-body); text-transform: uppercase; letter-spacing: .12em; color: var(--accent); }
+.hero h1 { font-family: var(--font-display); font-weight: 800; font-size: clamp(2rem, 5vw, 3rem); line-height: 1.05; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.hero p { margin: 0; color: var(--muted); max-width: 62ch; font-size: 1.05rem; }
+.facts { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 4px; }
+.chip { font: 500 .8rem var(--font-mono); padding: 4px 10px; border-radius: 99px; background: var(--surface); border: 1px solid var(--line); color: var(--ink); }
+.chip b { color: var(--accent); font-weight: 500; }
+
+/* Module */
+.mod { background: var(--surface); border: 1px solid var(--line); border-radius: 14px; padding: clamp(18px, 3vw, 32px); display: grid; gap: 22px; min-width: 0; }
+.mod-head { display: grid; grid-template-columns: auto 1fr; gap: 4px 16px; align-items: start; }
+.mod-num { grid-row: span 2; font: 800 2.4rem/1 var(--font-display); color: var(--accent); letter-spacing: -0.03em; min-width: 2.2ch; }
+.mod-head h2 { margin: 0; font: 800 clamp(1.4rem, 3vw, 1.8rem)/1.15 var(--font-display); letter-spacing: -0.015em; text-wrap: balance; }
+.mod-sum { margin: 0; color: var(--muted); }
+.mod-meta { grid-column: 2; display: flex; flex-wrap: wrap; align-items: center; gap: 10px 16px; margin-top: 8px; font-size: .85rem; color: var(--muted); }
+.done-toggle { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; font-weight: 500; color: var(--ink); padding: 4px 10px; border: 1px solid var(--line); border-radius: 8px; }
+.done-toggle input { width: 16px; height: 16px; accent-color: var(--accent); margin: 0; }
+
+.topic { display: grid; gap: 14px; min-width: 0; }
+.topic h3 { margin: 0; font: 700 1.2rem/1.25 var(--font-display); letter-spacing: -0.01em; }
+.topic > p { margin: 0; max-width: 68ch; }
+.wwwh { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+.wwwh > div { background: var(--surface); padding: 12px 14px; min-width: 0; }
+.wwwh b { display: block; font: 600 .7rem var(--font-body); text-transform: uppercase; letter-spacing: .12em; color: var(--accent); margin-bottom: 4px; }
+.wwwh p, .wwwh ul { margin: 0; font-size: .94rem; }
+.wwwh ul { padding-left: 18px; }
+@media (max-width: 620px) { .wwwh { grid-template-columns: minmax(0, 1fr); } }
+
+ul.tight { margin: 0; padding-left: 20px; display: grid; gap: 4px; max-width: 70ch; }
+
+.diagram { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto; min-width: 0; }
+.diagram-label { font: 600 .7rem var(--font-body); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 8px; }
+pre.mermaid { margin: 0; background: transparent; text-align: center; font-family: var(--font-body); }
+
+pre.code {
+  margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 14px 16px;
+  font: 400 .84rem/1.6 var(--font-mono); overflow-x: auto; min-width: 0; tab-size: 4;
+}
+pre.code .c { color: var(--code-dim); font-style: italic; }
+pre.code .k { color: var(--code-key); }
+.code-wrap { position: relative; min-width: 0; }
+.copy { position: absolute; top: 8px; right: 8px; font: 500 .72rem var(--font-body); color: var(--code-fg); background: transparent; border: 1px solid var(--code-dim); border-radius: 6px; padding: 2px 8px; cursor: pointer; opacity: .75; }
+.copy:hover { opacity: 1; }
+
+code.i { font: 500 .88em var(--font-mono); background: var(--accent-soft); padding: 1px 5px; border-radius: 4px; overflow-wrap: anywhere; }
+
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; min-width: 0; }
+table { border-collapse: collapse; width: 100%; font-size: .9rem; }
+th, td { text-align: left; padding: 9px 12px; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font: 600 .72rem var(--font-body); text-transform: uppercase; letter-spacing: .08em; color: var(--muted); background: var(--bg); white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+
+.callout { border-radius: 10px; padding: 12px 16px; display: grid; gap: 6px; min-width: 0; }
+.callout > b { font: 600 .72rem var(--font-body); text-transform: uppercase; letter-spacing: .12em; }
+.callout ul { margin: 0; padding-left: 18px; display: grid; gap: 3px; }
+.callout p { margin: 0; }
+.warn { background: var(--warn-soft); }
+.warn > b { color: var(--warn); }
+.new { background: var(--info-soft); }
+.new > b { color: var(--info); }
+
+.iq { display: grid; gap: 8px; }
+.iq h4, .task h4 { margin: 0; font: 600 .72rem var(--font-body); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); }
+details.qa { border: 1px solid var(--line); border-radius: 10px; background: var(--bg); }
+details.qa summary { cursor: pointer; padding: 10px 14px; font-weight: 600; list-style: none; display: grid; grid-template-columns: 1fr auto; gap: 10px; }
+details.qa summary::-webkit-details-marker { display: none; }
+details.qa summary::after { content: "Show answer"; font: 500 .75rem var(--font-body); color: var(--accent); align-self: center; white-space: nowrap; }
+details.qa[open] summary::after { content: "Hide"; }
+details.qa .a { padding: 0 14px 12px; display: grid; gap: 6px; }
+details.qa .a p { margin: 0; }
+details.qa .a ul { margin: 0; padding-left: 18px; }
+
+.task { border: 1.5px dashed var(--accent); border-radius: 10px; padding: 14px 16px; display: grid; gap: 6px; }
+.task h4 { color: var(--accent); }
+.task ol, .task ul { margin: 0; padding-left: 20px; display: grid; gap: 3px; }
+
+.pyramid { display: grid; gap: 6px; justify-items: center; }
+.pyramid div { padding: 8px 12px; border-radius: 6px; text-align: center; font-size: .88rem; background: var(--accent-soft); border: 1px solid var(--line); }
+.pyramid div:nth-child(1) { width: min(40%, 260px); }
+.pyramid div:nth-child(2) { width: min(68%, 440px); }
+.pyramid div:nth-child(3) { width: 100%; background: var(--accent); color: var(--accent-ink); }
+
+.sources ol { margin: 0; padding-left: 20px; display: grid; gap: 4px; font-size: .9rem; overflow-wrap: anywhere; }
+
+/* Mobile */
+@media (max-width: 900px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .menu-btn { display: inline-block; }
+  .rail {
+    position: fixed; z-index: 25; left: 0; top: calc(env(safe-area-inset-top, 0px) + 57px); bottom: 0; width: min(86vw, 320px); height: auto;
+    transform: translateX(-105%); transition: transform .25s; box-shadow: 0 10px 30px rgba(0,0,0,.25);
+  }
+  .rail.open { transform: none; }
+}
+@media (max-width: 520px) {
+  .progress-label { display: none; }
+  .mod-num { font-size: 1.8rem; }
+}
+</style>
+
+<header class="topbar">
+  <button class="btn menu-btn" id="menuBtn" aria-controls="rail" aria-expanded="false">Modules</button>
+  <div class="brand">Django <span>Fast Track</span></div>
+  <div class="progress" aria-live="polite">
+    <div class="bar" aria-hidden="true"><i id="barFill"></i></div>
+    <span class="progress-label" id="progressLabel">0 of 20 done</span>
+  </div>
+  <button class="btn" id="answersBtn">Show all answers</button>
+</header>
+
+<div class="shell">
+  <nav class="rail" id="rail" aria-label="Course modules">
+    <h2>Syllabus</h2>
+    <ol id="railList"></ol>
+  </nav>
+
+  <main>
+    <div class="col">
+
+<!-- ============================ 00 ============================ -->
+<section class="mod" id="m00" data-group="Start" data-short="Start here">
+  <div class="hero">
+    <span class="eyebrow">From basic Django to enterprise level</span>
+    <h1>Learn Django fast: short notes, clear flows, real practice.</h1>
+    <p>20 short modules. Each one gives you <b>What</b>, <b>Why</b>, <b>When</b>, <b>How</b>, a diagram, small code, common mistakes and interview questions. Do them in order. Tick each module when done; your progress is saved in this browser.</p>
+    <div class="facts">
+      <span class="chip">Django <b>6.1</b> (latest)</span>
+      <span class="chip">Django <b>5.2</b> LTS → Apr 2028</span>
+      <span class="chip">DRF <b>3.17</b></span>
+      <span class="chip">Celery <b>5.6</b></span>
+      <span class="chip">Python <b>3.12+</b> for Django 6</span>
+    </div>
+  </div>
+
+  <div class="mod-head">
+    <span class="mod-num">00</span>
+    <h2>Start here</h2>
+    <p class="mod-sum">The route, the versions, and how to use this course.</p>
+    <div class="mod-meta"><span>~10 min</span><label class="done-toggle"><input type="checkbox" id="done-m00"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>The learning route</h3>
+    <div class="diagram"><p class="diagram-label">Your path</p>
+<pre class="mermaid">
+flowchart LR
+  A["Core: request flow"] --> B["ORM + performance"]
+  B --> C["Migrations + transactions"]
+  C --> D["Views, templates, forms"]
+  D --> E["Auth + admin"]
+  E --> F["REST APIs with DRF"]
+  F --> G["Middleware, signals, caching"]
+  G --> H["Background tasks + async"]
+  H --> I["Architecture + testing"]
+  I --> J["Security + deployment"]
+  J --> K["Interview prep"]
+</pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Which Django version should you learn?</h3>
+    <div class="wwwh">
+      <div><b>Learn</b><p>Django 6.1 (latest) or 5.2 LTS. The core ideas are the same.</p></div>
+      <div><b>Why</b><p>Companies use LTS (long-term support) versions. Interviewers like it when you know what is new.</p></div>
+      <div><b>Your setup</b><p>Your Folder 12 uses Django 2.1 on Python 3.8. That is very old. Start a fresh project for this course.</p></div>
+      <div><b>Rule</b><p>Python 3.11 → use Django 5.2 LTS. Python 3.12+ → use Django 6.1.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+# New project for this course (you have Python 3.11.9 in pyenv)
+mkdir vidly-pro && cd vidly-pro
+~/.pyenv/versions/3.11.9/bin/python -m venv .venv
+source .venv/bin/activate
+python -m pip install "django~=5.2" djangorestframework
+django-admin startproject config .
+python manage.py runserver
+</pre></div>
+  </div>
+
+  <div class="callout new">
+    <b>How each module works</b>
+    <ul>
+      <li><b>What / Why / When / How</b>: the idea in 4 boxes. Read these first.</li>
+      <li><b>Diagram</b>: the flow. If you understand the diagram, you understand the topic.</li>
+      <li><b>Code</b>: only the code you need. Type it, don't just read it.</li>
+      <li><b>Watch out</b>: common mistakes that cost time in real projects.</li>
+      <li><b>Interview</b>: try to answer out loud first, then open the answer.</li>
+      <li><b>Practice</b>: each task grows one project, <b>Vidly Pro</b>, a movie rental app and API.</li>
+    </ul>
+  </div>
+</section>
+
+<!-- ============================ 01 ============================ -->
+<section class="mod" id="m01" data-group="Core" data-short="How Django works">
+  <div class="mod-head">
+    <span class="mod-num">01</span>
+    <h2>How Django works</h2>
+    <p class="mod-sum">One request, start to finish. Everything else plugs into this flow.</p>
+    <div class="mod-meta"><span>~20 min</span><label class="done-toggle"><input type="checkbox" id="done-m01"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>The request/response cycle</h3>
+    <div class="diagram"><p class="diagram-label">What happens when someone opens /movies/1/</p>
+<pre class="mermaid">
+flowchart TD
+  U["Browser"] -->|"HTTP request"| N["Nginx (web server)"]
+  N --> G["Gunicorn / Uvicorn (app server)"]
+  G --> H["WSGI / ASGI handler"]
+  H --> M["Middleware: top to bottom"]
+  M --> R["URL resolver: urls.py"]
+  R --> V["View function or class"]
+  V <--> O["Models / ORM"]
+  O <--> DB[("Database")]
+  V --> T["Template or Serializer"]
+  T --> RS["HttpResponse"]
+  RS --> M2["Middleware: bottom to top"]
+  M2 --> U
+</pre>
+    </div>
+    <ul class="tight">
+      <li><b>Middleware</b> wraps every request, like layers of an onion (sessions, auth, CSRF).</li>
+      <li><b>URL resolver</b> matches the path to a view.</li>
+      <li><b>View</b> holds the request logic. It reads or writes data through the ORM.</li>
+      <li><b>Template</b> (HTML) or <b>serializer</b> (JSON) builds the output.</li>
+    </ul>
+  </div>
+
+  <div class="topic">
+    <h3>MVT: Model, View, Template</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>Django's version of MVC. Model = data, View = logic, Template = HTML.</p></div>
+      <div><b>Why</b><p>Each part has one job, so code stays easy to change.</p></div>
+      <div><b>Key point</b><p>Django's "View" is like the MVC "Controller". Django itself (URLs + framework) does the routing.</p></div>
+      <div><b>How</b><p><code class="i">models.py</code> → <code class="i">views.py</code> → <code class="i">templates/</code>, connected by <code class="i">urls.py</code>.</p></div>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Project vs app</h3>
+    <div class="wwwh">
+      <div><b>Project</b><p>The whole website: settings, root URLs, WSGI/ASGI entry points.</p></div>
+      <div><b>App</b><p>One feature area (movies, rentals, users). It has its own models, views, URLs and tests.</p></div>
+      <div><b>When to make a new app</b><p>When a feature has its own data and can be explained in one sentence.</p></div>
+      <div><b>How</b><p><code class="i">python manage.py startapp rentals</code>, then add it to <code class="i">INSTALLED_APPS</code>.</p></div>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Important files</h3>
+    <div class="table-wrap"><table>
+      <tr><th>File</th><th>Job</th></tr>
+      <tr><td><code class="i">manage.py</code></td><td>Command-line tool: runserver, migrate, shell, test.</td></tr>
+      <tr><td><code class="i">settings.py</code></td><td>All configuration: apps, database, middleware, templates, static.</td></tr>
+      <tr><td><code class="i">urls.py</code></td><td>Maps URL paths to views.</td></tr>
+      <tr><td><code class="i">wsgi.py / asgi.py</code></td><td>Entry points for production servers (sync / async).</td></tr>
+      <tr><td><code class="i">apps.py</code></td><td>App config. <code class="i">ready()</code> runs once at startup (good place to connect signals).</td></tr>
+    </table></div>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>Never use <code class="i">runserver</code> in production. It is for development only.</li>
+      <li>App order in <code class="i">INSTALLED_APPS</code> matters for templates and static files: the first match wins.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>Explain the Django request lifecycle.</summary><div class="a"><p>The web server passes the request to the WSGI/ASGI handler. Middleware runs top to bottom. The URL resolver finds the view. The view uses the ORM and renders a template or serializer. The response goes back up through the middleware in reverse order.</p></div></details>
+    <details class="qa"><summary>What is MVT and how is it different from MVC?</summary><div class="a"><p>Model = data, View = business/request logic, Template = presentation. Django's View does the job of the MVC Controller. The framework's URL dispatcher does the routing.</p></div></details>
+    <details class="qa"><summary>Project vs app?</summary><div class="a"><p>A project is the whole site with its settings. An app is a reusable feature module. One project has many apps.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Create the new project (see Module 00) and an app called <code class="i">movies</code>.</li>
+      <li>Write one view that returns <code class="i">HttpResponse("hello")</code> and connect it in <code class="i">urls.py</code>.</li>
+      <li>Add a <code class="i">print()</code> in the view, and trace the request in the terminal.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 02 ============================ -->
+<section class="mod" id="m02" data-group="Data" data-short="Models and the ORM">
+  <div class="mod-head">
+    <span class="mod-num">02</span>
+    <h2>Models and the ORM</h2>
+    <p class="mod-sum">Python classes become tables. QuerySets become SQL.</p>
+    <div class="mod-meta"><span>~40 min</span><label class="done-toggle"><input type="checkbox" id="done-m02"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>Models, fields and relationships</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>A model is a Python class. One class = one table. One field = one column.</p></div>
+      <div><b>Why</b><p>You write Python instead of SQL. Django handles escaping, joins and different databases.</p></div>
+      <div><b>When</b><p>For any data you store. Use raw SQL only for rare, very complex queries.</p></div>
+      <div><b>How</b><p>Subclass <code class="i">models.Model</code>, add fields, then run makemigrations + migrate.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+from django.db import models
+
+class Genre(models.Model):
+    name = models.CharField(max_length=100, unique=True)
+
+class Movie(models.Model):
+    title = models.CharField(max_length=255)
+    genre = models.ForeignKey(Genre, on_delete=models.PROTECT, related_name="movies")
+    tags = models.ManyToManyField("Tag", blank=True)
+    daily_rate = models.DecimalField(max_digits=6, decimal_places=2)  # money: Decimal, not Float
+    number_in_stock = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+        indexes = [models.Index(fields=["title"])]
+        constraints = [
+            models.CheckConstraint(condition=models.Q(daily_rate__gte=0), name="rate_not_negative"),
+        ]
+
+    def __str__(self):
+        return self.title
+</pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Relationship</th><th>Field</th><th>Example</th></tr>
+      <tr><td>Many-to-one</td><td><code class="i">ForeignKey</code></td><td>Many movies → one genre</td></tr>
+      <tr><td>One-to-one</td><td><code class="i">OneToOneField</code></td><td>User → Profile</td></tr>
+      <tr><td>Many-to-many</td><td><code class="i">ManyToManyField</code></td><td>Movies ↔ Tags. Use <code class="i">through=</code> when the link needs extra fields.</td></tr>
+    </table></div>
+    <div class="table-wrap"><table>
+      <tr><th>on_delete</th><th>What happens when the parent is deleted</th></tr>
+      <tr><td><code class="i">CASCADE</code></td><td>Delete the children too.</td></tr>
+      <tr><td><code class="i">PROTECT</code></td><td>Block the delete (raises an error). Safe default for important data.</td></tr>
+      <tr><td><code class="i">SET_NULL</code></td><td>Set the field to NULL (needs <code class="i">null=True</code>).</td></tr>
+      <tr><td><code class="i">RESTRICT</code></td><td>Like PROTECT, but allows the delete if the parent is removed by another CASCADE.</td></tr>
+      <tr><td><code class="i">DB_CASCADE</code> <small>(6.1)</small></td><td>The database does the cascade. Faster, but no Django signals run.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="topic">
+    <h3>QuerySets are lazy</h3>
+    <div class="diagram"><p class="diagram-label">Chaining builds a query; it runs only when needed</p>
+<pre class="mermaid">
+flowchart LR
+  A["Movie.objects.filter(...)"] --> B[".exclude(...)"]
+  B --> C[".order_by(...)"]
+  C --> D{"Is the data needed?"}
+  D -->|"for loop, list(), len(), bool, print"| E["ONE SQL query runs"]
+  D -->|"not yet"| F["No query. Just a plan."]
+</pre>
+    </div>
+    <div class="code-wrap"><pre class="code">
+from django.db.models import Q, F, Count, Avg
+
+Movie.objects.filter(daily_rate__gte=3, title__icontains="war")    # AND
+Movie.objects.filter(Q(genre__name="Comedy") | Q(daily_rate__lt=2))  # OR with Q
+Movie.objects.filter(genre__name="Drama")                            # follow a relation with __
+Movie.objects.get(pk=1)              # exactly one, else DoesNotExist / MultipleObjectsReturned
+Movie.objects.filter(pk=1).first()  # one or None, never raises
+
+# F() = use a column value inside the database (no race condition)
+Movie.objects.filter(pk=1).update(number_in_stock=F("number_in_stock") - 1)
+
+# annotate = add a value PER ROW; aggregate = ONE value for the whole set
+Genre.objects.annotate(movie_count=Count("movies"))
+Movie.objects.aggregate(avg_rate=Avg("daily_rate"))   # {'avg_rate': Decimal('3.50')}
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Custom managers and QuerySets</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>Your own reusable query methods, such as <code class="i">Movie.objects.available()</code>.</p></div>
+      <div><b>Why</b><p>One place for common filters. They stay chainable.</p></div>
+      <div><b>When</b><p>When the same filter appears in 2+ places.</p></div>
+      <div><b>How</b><p>Subclass <code class="i">QuerySet</code>, then use <code class="i">.as_manager()</code>.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+class MovieQuerySet(models.QuerySet):
+    def available(self):
+        return self.filter(number_in_stock__gt=0)
+
+    def cheap(self):
+        return self.filter(daily_rate__lt=2)
+
+class Movie(models.Model):
+    ...
+    objects = MovieQuerySet.as_manager()
+
+Movie.objects.available().cheap()   # chainable
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Model inheritance: 3 types</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Type</th><th>Tables</th><th>Use it when</th></tr>
+      <tr><td>Abstract base (<code class="i">abstract = True</code>)</td><td>No table for the parent. Fields are copied into each child.</td><td>Shared fields such as <code class="i">created_at</code>. <b>Most common.</b></td></tr>
+      <tr><td>Multi-table</td><td>Parent and child tables, joined</td><td>Rarely. Every read needs a JOIN.</td></tr>
+      <tr><td>Proxy (<code class="i">proxy = True</code>)</td><td>Same table</td><td>Same data with different behavior, ordering or admin.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li><code class="i">null=True</code> is about the database (allows NULL). <code class="i">blank=True</code> is about validation (allows empty in forms). For text fields, use <code class="i">blank=True</code> only, and store "" instead of NULL.</li>
+      <li>Use <code class="i">DecimalField</code> for money. <code class="i">FloatField</code> gives rounding errors.</li>
+      <li><code class="i">queryset.update()</code> and <code class="i">bulk_create()</code> skip <code class="i">save()</code> and signals.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>When is a QuerySet evaluated?</summary><div class="a"><p>When you iterate it, or call <code class="i">list()</code>, <code class="i">len()</code> or <code class="i">bool()</code>, or use slicing with a step, <code class="i">repr()</code> or pickling. Until then it only builds SQL. Results are cached on the QuerySet after the first evaluation.</p></div></details>
+    <details class="qa"><summary>Difference between F() and Q()?</summary><div class="a"><p><code class="i">F()</code> refers to a column value inside the database (for example, add 1 to stock without loading it). <code class="i">Q()</code> builds complex conditions with OR (<code class="i">|</code>), AND (<code class="i">&amp;</code>) and NOT (<code class="i">~</code>).</p></div></details>
+    <details class="qa"><summary>annotate() vs aggregate()?</summary><div class="a"><p><code class="i">annotate</code> adds a computed value to each row and returns a QuerySet. <code class="i">aggregate</code> returns a single dict for the whole set.</p></div></details>
+    <details class="qa"><summary>get() vs filter()?</summary><div class="a"><p><code class="i">get()</code> returns one object and raises an error if it finds 0 or more than 1. <code class="i">filter()</code> always returns a QuerySet, which can be empty.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Create the <code class="i">Genre</code>, <code class="i">Movie</code>, <code class="i">Customer</code> and <code class="i">Rental</code> models (Rental: customer FK, movie FK, rented_at, returned_at).</li>
+      <li>Add <code class="i">MovieQuerySet.available()</code>.</li>
+      <li>In <code class="i">python manage.py shell</code>, count movies per genre with <code class="i">annotate</code>.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 03 ============================ -->
+<section class="mod" id="m03" data-group="Data" data-short="Query performance">
+  <div class="mod-head">
+    <span class="mod-num">03</span>
+    <h2>Query performance</h2>
+    <p class="mod-sum">The number one interview topic. Slow Django apps are almost always slow queries.</p>
+    <div class="mod-meta"><span>~35 min</span><label class="done-toggle"><input type="checkbox" id="done-m03"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>The N+1 problem</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>1 query for the list, then 1 extra query for each row's related object.</p></div>
+      <div><b>Why it hurts</b><p>100 movies = 101 queries. The page gets slower as the data grows.</p></div>
+      <div><b>When it happens</b><p>When a loop (in a template or serializer) accesses <code class="i">movie.genre</code> or <code class="i">movie.tags.all()</code>.</p></div>
+      <div><b>Fix</b><p><code class="i">select_related</code> for FK/one-to-one; <code class="i">prefetch_related</code> for many-to-many and reverse FK.</p></div>
+    </div>
+    <div class="diagram"><p class="diagram-label">Same page, three ways</p>
+<pre class="mermaid">
+flowchart TB
+  subgraph BAD["No fix: 1 + N queries"]
+    a1["SELECT * FROM movie"] --> a2["SELECT genre WHERE id=1"]
+    a2 --> a3["SELECT genre WHERE id=2"]
+    a3 --> a4["... once per movie"]
+  end
+  subgraph SR["select_related: 1 query"]
+    b1["SELECT movie JOIN genre"]
+  end
+  subgraph PR["prefetch_related: 2 queries"]
+    c1["SELECT * FROM movie"] --> c2["SELECT tags WHERE movie_id IN (...)"]
+    c2 --> c3["Python joins them in memory"]
+  end
+</pre>
+    </div>
+    <div class="code-wrap"><pre class="code">
+from django.db.models import Prefetch
+
+# FK / OneToOne -> SQL JOIN
+movies = Movie.objects.select_related("genre")
+
+# M2M / reverse FK -> second query + Python join
+movies = Movie.objects.prefetch_related("tags")
+
+# Prefetch with a custom queryset (only active rentals)
+customers = Customer.objects.prefetch_related(
+    Prefetch("rentals", queryset=Rental.objects.filter(returned_at__isnull=True), to_attr="open_rentals")
+)
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Load less data</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Tool</th><th>Use it to</th></tr>
+      <tr><td><code class="i">only("id", "title")</code> / <code class="i">defer("plot")</code></td><td>Load fewer columns.</td></tr>
+      <tr><td><code class="i">values()</code> / <code class="i">values_list(..., flat=True)</code></td><td>Get dicts or tuples instead of model objects. Faster for reports.</td></tr>
+      <tr><td><code class="i">exists()</code></td><td>Check "is there any?" without loading rows.</td></tr>
+      <tr><td><code class="i">count()</code></td><td>Count in SQL. Don't use <code class="i">len(qs)</code> unless you need the rows anyway.</td></tr>
+      <tr><td><code class="i">bulk_create</code> / <code class="i">bulk_update</code></td><td>Insert or update many rows in one query.</td></tr>
+      <tr><td><code class="i">iterator(chunk_size=2000)</code></td><td>Loop over millions of rows without filling memory.</td></tr>
+      <tr><td><code class="i">qs.explain()</code></td><td>See the database's query plan.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="topic">
+    <h3>Indexes</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>A sorted lookup structure, like a book index. It makes reads fast.</p></div>
+      <div><b>Why</b><p>Without an index, the database scans every row.</p></div>
+      <div><b>When</b><p>For columns used often in <code class="i">filter</code>, <code class="i">order_by</code> or joins. FKs get an index automatically.</p></div>
+      <div><b>Cost</b><p>Writes get slower and the database uses more disk. Don't index everything.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+class Meta:
+    indexes = [
+        models.Index(fields=["genre", "-created_at"]),           # composite: filter + sort
+        models.Index(fields=["title"], condition=models.Q(number_in_stock__gt=0),
+                     name="available_title_idx"),                 # partial index
+    ]
+</pre></div>
+  </div>
+
+  <div class="callout new">
+    <b>New in Django 6.1: fetch modes</b>
+    <p><code class="i">Movie.objects.fetch_mode(models.FETCH_PEERS)</code> turns a hidden N+1 into 2 queries automatically. <code class="i">FETCH_RAISE</code> raises an error on any unplanned query, which is great in development and tests to catch N+1 early.</p>
+  </div>
+
+  <div class="topic">
+    <h3>How to find slow queries</h3>
+    <ul class="tight">
+      <li><b>Django Debug Toolbar</b>: shows every SQL query per page in development.</li>
+      <li><b>django-silk</b>: profiles requests and queries.</li>
+      <li><b>Tests</b>: <code class="i">assertNumQueries(2)</code> locks the query count so N+1 can't come back.</li>
+      <li><b>Production</b>: APM tools (Sentry, New Relic, Datadog) and the database's slow query log.</li>
+    </ul>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li><code class="i">select_related</code> on a many-to-many does nothing useful. Use <code class="i">prefetch_related</code>.</li>
+      <li>Calling <code class="i">.filter()</code> on a prefetched relation runs a new query and ignores the prefetch. Use <code class="i">Prefetch(..., queryset=...)</code> instead.</li>
+      <li>Measure first. Don't guess.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>select_related vs prefetch_related?</summary><div class="a"><p><code class="i">select_related</code> uses a SQL JOIN in one query and works for ForeignKey/OneToOne (single-valued). <code class="i">prefetch_related</code> runs a separate query per relation and joins the results in Python. It works for ManyToMany and reverse ForeignKey (multi-valued).</p></div></details>
+    <details class="qa"><summary>How do you find and fix a slow Django page?</summary><div class="a"><p>Measure with Debug Toolbar or an APM tool, then count queries. Fix N+1 with select/prefetch, load fewer columns, add indexes for common filters (check with <code class="i">explain()</code>), cache expensive results, and move heavy work to background tasks.</p></div></details>
+    <details class="qa"><summary>When would you use raw SQL?</summary><div class="a"><p>Rarely: for complex reports, database-specific features or measured hot paths. Always use parameters (<code class="i">raw("... WHERE id = %s", [id])</code>), never string formatting, to avoid SQL injection.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Install <code class="i">django-debug-toolbar</code>. Load a movie list page that shows the genre and tags.</li>
+      <li>Count the queries, fix them with select/prefetch, and count again.</li>
+      <li>Write a test with <code class="i">assertNumQueries</code> for that view.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 04 ============================ -->
+<section class="mod" id="m04" data-group="Data" data-short="Migrations">
+  <div class="mod-head">
+    <span class="mod-num">04</span>
+    <h2>Migrations</h2>
+    <p class="mod-sum">Version control for your database schema.</p>
+    <div class="mod-meta"><span>~25 min</span><label class="done-toggle"><input type="checkbox" id="done-m04"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>How migrations work</h3>
+    <div class="diagram"><p class="diagram-label">From model change to database change</p>
+<pre class="mermaid">
+flowchart LR
+  A["Edit models.py"] --> B["makemigrations"]
+  B --> C["New file: 0002_add_slug.py"]
+  C --> D["Review + commit to git"]
+  D --> E["migrate"]
+  E --> F["Schema updated + row in django_migrations"]
+</pre>
+    </div>
+    <div class="table-wrap"><table>
+      <tr><th>Command</th><th>Does</th></tr>
+      <tr><td><code class="i">makemigrations</code></td><td>Compares the models with the last migration and writes a new file.</td></tr>
+      <tr><td><code class="i">migrate</code></td><td>Applies the files that haven't run yet.</td></tr>
+      <tr><td><code class="i">showmigrations</code></td><td>Lists applied [X] and pending [ ] migrations.</td></tr>
+      <tr><td><code class="i">sqlmigrate app 0002</code></td><td>Shows the SQL a migration will run. Check it before big changes.</td></tr>
+      <tr><td><code class="i">migrate app 0001</code></td><td>Rolls back to migration 0001.</td></tr>
+      <tr><td><code class="i">squashmigrations</code></td><td>Combines many old files into one.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="topic">
+    <h3>Data migrations</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>A migration that changes data, not the schema.</p></div>
+      <div><b>When</b><p>To fill a new column, fix bad values or split a field.</p></div>
+      <div><b>How</b><p><code class="i">makemigrations movies --empty -n fill_slugs</code>, then add <code class="i">RunPython</code>.</p></div>
+      <div><b>Rule</b><p>Use <code class="i">apps.get_model()</code>, never a direct import. The model must match that point in history.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+from django.db import migrations
+from django.utils.text import slugify
+
+def fill_slugs(apps, schema_editor):
+    Movie = apps.get_model("movies", "Movie")
+    for movie in Movie.objects.filter(slug=""):
+        movie.slug = slugify(movie.title)
+        movie.save(update_fields=["slug"])
+
+class Migration(migrations.Migration):
+    dependencies = [("movies", "0002_movie_slug")]
+    operations = [migrations.RunPython(fill_slugs, migrations.RunPython.noop)]
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Zero-downtime changes (expand and contract)</h3>
+    <div class="diagram"><p class="diagram-label">Renaming or replacing a column safely in production</p>
+<pre class="mermaid">
+flowchart LR
+  E1["1 Expand: add new column (nullable)"] --> E2["2 Deploy code that writes both"]
+  E2 --> E3["3 Backfill old rows"]
+  E3 --> E4["4 Deploy code that reads new"]
+  E4 --> E5["5 Contract: drop old column"]
+</pre>
+    </div>
+    <p>Why: during a deploy, old and new code run at the same time. Each step must work with both.</p>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>Never edit a migration that already ran in production. Write a new one.</li>
+      <li>Adding a NOT NULL column without a default, or adding an index to a huge table, can lock the table. On PostgreSQL, use <code class="i">AddIndexConcurrently</code>.</li>
+      <li>Two developers' migrations with the same number cause a conflict. Fix it with <code class="i">makemigrations --merge</code>.</li>
+      <li>Always commit migration files to git.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>How do you run migrations safely in production?</summary><div class="a"><p>Make changes backward-compatible (expand and contract), review the SQL with <code class="i">sqlmigrate</code>, avoid long table locks, run migrations as a separate step before switching traffic, and have a rollback plan.</p></div></details>
+    <details class="qa"><summary>Schema migration vs data migration?</summary><div class="a"><p>A schema migration changes tables or columns. A data migration changes rows using <code class="i">RunPython</code> or <code class="i">RunSQL</code>, with the historical model from <code class="i">apps.get_model</code>.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Add an empty <code class="i">slug</code> field to Movie and migrate.</li>
+      <li>Write a data migration that fills the slugs, then make the field <code class="i">unique=True</code> in a third migration.</li>
+      <li>Read the SQL with <code class="i">sqlmigrate</code>.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 05 ============================ -->
+<section class="mod" id="m05" data-group="Data" data-short="Transactions and data safety">
+  <div class="mod-head">
+    <span class="mod-num">05</span>
+    <h2>Transactions and data safety</h2>
+    <p class="mod-sum">All or nothing. No double bookings. No lost updates.</p>
+    <div class="mod-meta"><span>~25 min</span><label class="done-toggle"><input type="checkbox" id="done-m05"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>transaction.atomic</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>A block of database work that fully succeeds or fully rolls back.</p></div>
+      <div><b>Why</b><p>If step 2 fails, step 1 must not stay saved (for example, payment saved but rental not).</p></div>
+      <div><b>When</b><p>Any action that writes 2 or more rows that belong together.</p></div>
+      <div><b>How</b><p><code class="i">@transaction.atomic</code> or <code class="i">with transaction.atomic():</code></p></div>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Race conditions and locking</h3>
+    <p>Two users rent the last copy at the same moment. Both read "stock = 1". Both rent it. Now stock is −1. Two fixes:</p>
+    <div class="code-wrap"><pre class="code">
+from django.db import transaction
+from django.db.models import F
+
+# Fix A: lock the row until the transaction ends
+@transaction.atomic
+def rent_movie(customer, movie_id):
+    movie = Movie.objects.select_for_update().get(pk=movie_id)   # other requests WAIT here
+    if movie.number_in_stock &lt; 1:
+        raise OutOfStock()
+    movie.number_in_stock -= 1
+    movie.save(update_fields=["number_in_stock"])
+    rental = Rental.objects.create(customer=customer, movie=movie)
+    transaction.on_commit(lambda: send_receipt.enqueue(rental_id=rental.pk))
+    return rental
+
+# Fix B: one atomic UPDATE with a condition (no lock needed)
+updated = Movie.objects.filter(pk=movie_id, number_in_stock__gt=0).update(
+    number_in_stock=F("number_in_stock") - 1
+)
+if updated == 0:
+    raise OutOfStock()
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>on_commit: run side effects only after save</h3>
+    <div class="diagram"><p class="diagram-label">Why emails and tasks wait for COMMIT</p>
+<pre class="mermaid">
+sequenceDiagram
+  participant V as View
+  participant DB as Database
+  participant Q as Task queue
+  V->>DB: BEGIN
+  V->>DB: INSERT rental
+  V->>V: on_commit(send_receipt)
+  V->>DB: COMMIT
+  DB-->>V: OK
+  V->>Q: send_receipt (only now)
+</pre>
+    </div>
+    <p>If you queue the task before the commit, the worker may not find the row yet, or the transaction may roll back after the email has already been sent.</p>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li><code class="i">ATOMIC_REQUESTS = True</code> wraps every request in a transaction. It's simple, but it holds locks longer. Many teams prefer explicit <code class="i">atomic</code> blocks.</li>
+      <li>Python validation is not enough. Add <code class="i">UniqueConstraint</code> or <code class="i">CheckConstraint</code> so the database is the final guard.</li>
+      <li><code class="i">get_or_create</code> can still race. Back it with a unique constraint.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>How do you prevent two users booking the same item?</summary><div class="a"><p>Use <code class="i">select_for_update()</code> inside <code class="i">atomic</code> to lock the row, or a conditional <code class="i">UPDATE ... WHERE stock &gt; 0</code> with <code class="i">F()</code> and check the affected row count. Add a database constraint as the final guard.</p></div></details>
+    <details class="qa"><summary>Why use transaction.on_commit?</summary><div class="a"><p>To run side effects (emails, tasks, cache clears) only after the data is really saved. If the transaction rolls back, they don't run.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Write <code class="i">rent_movie()</code> with <code class="i">select_for_update</code>.</li>
+      <li>Add a <code class="i">CheckConstraint</code> so stock can never go below 0.</li>
+      <li>Add a <code class="i">UniqueConstraint</code>: a customer can't have two open rentals of the same movie.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 06 ============================ -->
+<section class="mod" id="m06" data-group="Web" data-short="Views and URLs">
+  <div class="mod-head">
+    <span class="mod-num">06</span>
+    <h2>Views and URLs</h2>
+    <p class="mod-sum">Function views for clarity, class-based views for reuse.</p>
+    <div class="mod-meta"><span>~30 min</span><label class="done-toggle"><input type="checkbox" id="done-m06"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>FBV vs CBV</h3>
+    <div class="table-wrap"><table>
+      <tr><th></th><th>Function-based view (FBV)</th><th>Class-based view (CBV)</th></tr>
+      <tr><td><b>Looks like</b></td><td>A plain function</td><td>A class with methods (get, post)</td></tr>
+      <tr><td><b>Good for</b></td><td>Custom, one-off logic. Easy to read.</td><td>Standard CRUD pages. Reuse through mixins.</td></tr>
+      <tr><td><b>Downside</b></td><td>Repeated code for CRUD</td><td>"Hidden" flow, so you must know the methods to override.</td></tr>
+    </table></div>
+    <div class="code-wrap"><pre class="code">
+# FBV
+def movie_detail(request, pk):
+    movie = get_object_or_404(Movie, pk=pk)
+    return render(request, "movies/detail.html", {"movie": movie})
+
+# CBV: same page, plus a list page, in a few lines
+from django.views.generic import ListView, DetailView
+from django.contrib.auth.mixins import LoginRequiredMixin
+
+class MovieListView(LoginRequiredMixin, ListView):
+    queryset = Movie.objects.select_related("genre")
+    paginate_by = 20
+
+class MovieDetailView(DetailView):
+    model = Movie   # template: movies/movie_detail.html
+</pre></div>
+    <div class="diagram"><p class="diagram-label">How a CBV handles a request</p>
+<pre class="mermaid">
+flowchart LR
+  A["as_view()"] --> B["dispatch()"]
+  B --> C{"HTTP method"}
+  C -->|GET| D["get()"]
+  D --> E["get_queryset() then get_context_data()"]
+  E --> F["render template"]
+  C -->|POST| G["post()"]
+  G --> H{"form valid?"}
+  H -->|yes| I["form_valid(): save + redirect"]
+  H -->|no| J["form_invalid(): show errors"]
+</pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>URLs</h3>
+    <div class="code-wrap"><pre class="code">
+# movies/urls.py
+app_name = "movies"                      # namespace
+urlpatterns = [
+    path("", views.MovieListView.as_view(), name="list"),
+    path("&lt;int:pk&gt;/", views.MovieDetailView.as_view(), name="detail"),
+    path("&lt;slug:slug&gt;/", views.movie_by_slug, name="by-slug"),
+]
+
+# config/urls.py
+urlpatterns = [path("movies/", include("movies.urls"))]
+
+# Never hard-code URLs:
+reverse("movies:detail", args=[5])       # in Python
+{% url 'movies:detail' movie.pk %}       # in templates
+</pre></div>
+    <ul class="tight">
+      <li>Converters: <code class="i">int</code>, <code class="i">str</code>, <code class="i">slug</code>, <code class="i">uuid</code>, <code class="i">path</code>.</li>
+      <li><code class="i">reverse_lazy</code> is for class attributes (such as <code class="i">success_url</code>), because they load before URLs are ready.</li>
+    </ul>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>Mixin order matters: put <code class="i">LoginRequiredMixin</code> first (on the left).</li>
+      <li>Use <code class="i">get_object_or_404</code>, not <code class="i">.get()</code>, in views. Otherwise a missing row gives a 500 error instead of a 404.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>When FBV, when CBV?</summary><div class="a"><p>Use a CBV (generic views) for standard list/detail/create/update/delete pages and shared behavior through mixins. Use an FBV for unusual flows where explicit code is clearer. Both are fine; consistency within a team matters most.</p></div></details>
+    <details class="qa"><summary>What does as_view() do?</summary><div class="a"><p>It returns a function that creates a new instance of the class for each request and calls <code class="i">dispatch()</code>. <code class="i">dispatch()</code> then calls the method matching the HTTP verb.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Build movie list and detail pages with <code class="i">ListView</code> and <code class="i">DetailView</code>, with pagination.</li>
+      <li>Add a genre filter through the query string: <code class="i">?genre=comedy</code> in <code class="i">get_queryset()</code>.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 07 ============================ -->
+<section class="mod" id="m07" data-group="Web" data-short="Templates and forms">
+  <div class="mod-head">
+    <span class="mod-num">07</span>
+    <h2>Templates and forms</h2>
+    <p class="mod-sum">Safe HTML output and safe user input.</p>
+    <div class="mod-meta"><span>~30 min</span><label class="done-toggle"><input type="checkbox" id="done-m07"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>Templates: the essentials</h3>
+    <ul class="tight">
+      <li><b>Inheritance</b>: <code class="i">{% extends "base.html" %}</code> + <code class="i">{% block content %}</code>.</li>
+      <li><b>Include</b>: <code class="i">{% include "partials/card.html" with movie=m %}</code>.</li>
+      <li><b>Auto-escaping</b>: <code class="i">{{ value }}</code> is HTML-escaped, which blocks XSS. <code class="i">|safe</code> turns that off, so only use it on content you trust.</li>
+      <li><b>Context processors</b>: add variables to every template (for example <code class="i">request</code> and <code class="i">user</code>).</li>
+      <li><b>Custom tags and filters</b>: put them in <code class="i">app/templatetags/</code>.</li>
+    </ul>
+    <div class="callout new">
+      <b>New in Django 6.0: template partials</b>
+      <p>Define a named fragment once with <code class="i">{% partialdef movie-row %}…{% endpartialdef %}</code>, reuse it with <code class="i">{% partial movie-row %}</code>, or render only that piece with <code class="i">render(request, "movies.html#movie-row", ctx)</code>. This is great with HTMX.</p>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Forms</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>Classes that validate input and render HTML fields.</p></div>
+      <div><b>Why</b><p>Never trust user input. Forms clean the data, check it and report errors.</p></div>
+      <div><b>When</b><p><code class="i">ModelForm</code> to create or edit a model. <code class="i">Form</code> for anything else (search, contact).</p></div>
+      <div><b>How</b><p><code class="i">is_valid()</code>, then use <code class="i">cleaned_data</code> or <code class="i">save()</code>.</p></div>
+    </div>
+    <div class="diagram"><p class="diagram-label">Validation order</p>
+<pre class="mermaid">
+flowchart TD
+  A["form = RentalForm(request.POST)"] --> B["form.is_valid()"]
+  B --> C["Each field: to_python, validate, validators"]
+  C --> D["clean_fieldname() for each field"]
+  D --> E["form.clean(): cross-field checks"]
+  E --> F{"Any errors?"}
+  F -->|No| G["cleaned_data, then save()"]
+  F -->|Yes| H["Re-render with form.errors"]
+</pre>
+    </div>
+    <div class="code-wrap"><pre class="code">
+class RentalForm(forms.ModelForm):
+    class Meta:
+        model = Rental
+        fields = ["movie", "rented_at", "due_at"]
+
+    def clean_movie(self):                     # one field
+        movie = self.cleaned_data["movie"]
+        if movie.number_in_stock &lt; 1:
+            raise forms.ValidationError("Out of stock.")
+        return movie
+
+    def clean(self):                           # several fields
+        data = super().clean()
+        if data.get("due_at") and data["due_at"] &lt;= data["rented_at"]:
+            self.add_error("due_at", "Due date must be after rent date.")
+        return data
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>POST, Redirect, GET (PRG)</h3>
+    <div class="diagram"><p class="diagram-label">Stops double submits on refresh</p>
+<pre class="mermaid">
+sequenceDiagram
+  Browser->>Django: POST /rentals/new (form)
+  Django->>Django: validate + save
+  Django-->>Browser: 302 redirect to /rentals/42
+  Browser->>Django: GET /rentals/42
+  Django-->>Browser: 200 page
+</pre>
+    </div>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>Every POST form needs <code class="i">{% csrf_token %}</code>.</li>
+      <li>In ModelForm, always list <code class="i">fields</code> explicitly. Using <code class="i">"__all__"</code> can let users set fields they shouldn't (mass assignment).</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>How does CSRF protection work?</summary><div class="a"><p>Django sets a secret token in a cookie and requires the same token in every unsafe request (POST/PUT/DELETE), sent in a form field or header. Another site can't read the token, so it can't forge the request. <code class="i">CsrfViewMiddleware</code> checks it.</p></div></details>
+    <details class="qa"><summary>clean_&lt;field&gt;() vs clean()?</summary><div class="a"><p><code class="i">clean_&lt;field&gt;</code> validates one field and returns its cleaned value. <code class="i">clean()</code> runs after all fields and handles rules that involve several fields.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Build a rental create page with <code class="i">CreateView</code> + <code class="i">RentalForm</code>, including the due-date rule.</li>
+      <li>Show a success message with the messages framework after the redirect.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 08 ============================ -->
+<section class="mod" id="m08" data-group="Web" data-short="Users, auth, permissions">
+  <div class="mod-head">
+    <span class="mod-num">08</span>
+    <h2>Users, auth and permissions</h2>
+    <p class="mod-sum">Who are you (authentication) and what can you do (authorization).</p>
+    <div class="mod-meta"><span>~35 min</span><label class="done-toggle"><input type="checkbox" id="done-m08"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>Custom user model: do it on day one</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>Your own <code class="i">User</code> class instead of Django's default.</p></div>
+      <div><b>Why</b><p>Changing the user model later is very painful, because every FK points to it.</p></div>
+      <div><b>When</b><p>Before the first <code class="i">migrate</code> of every new project, even if it's empty.</p></div>
+      <div><b>How</b><p>Subclass <code class="i">AbstractUser</code> and set <code class="i">AUTH_USER_MODEL</code>.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+# users/models.py
+from django.contrib.auth.models import AbstractUser
+
+class User(AbstractUser):
+    phone = models.CharField(max_length=20, blank=True)
+
+# settings.py
+AUTH_USER_MODEL = "users.User"
+
+# everywhere else: never import User directly
+from django.contrib.auth import get_user_model
+User = get_user_model()
+customer = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Session login flow</h3>
+    <div class="diagram"><p class="diagram-label">Classic cookie-based login</p>
+<pre class="mermaid">
+sequenceDiagram
+  Browser->>Django: POST /login (username, password)
+  Django->>Django: authenticate() checks password hash
+  Django->>DB: login() creates a session row
+  Django-->>Browser: Set-Cookie sessionid
+  Browser->>Django: GET /rentals (cookie sent)
+  Django->>Django: AuthenticationMiddleware sets request.user
+</pre>
+    </div>
+    <ul class="tight">
+      <li><code class="i">authenticate()</code> = check the credentials. <code class="i">login()</code> = start the session. <code class="i">logout()</code> = end it.</li>
+      <li>Passwords are stored hashed (PBKDF2 by default; Argon2 is an option), never as plain text.</li>
+    </ul>
+  </div>
+
+  <div class="topic">
+    <h3>Permissions</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Level</th><th>Tool</th></tr>
+      <tr><td>Logged in?</td><td><code class="i">@login_required</code>, <code class="i">LoginRequiredMixin</code></td></tr>
+      <tr><td>Model permission</td><td>Django auto-creates add/change/delete/view for each model. Check with <code class="i">user.has_perm("movies.add_movie")</code> or <code class="i">PermissionRequiredMixin</code>.</td></tr>
+      <tr><td>Roles</td><td><b>Groups</b>: give permissions to a group (such as "Staff"), then add users to it.</td></tr>
+      <tr><td>Per object ("only my rentals")</td><td>Filter the queryset by <code class="i">request.user</code>, or use django-guardian / django-rules, or DRF <code class="i">has_object_permission</code>.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>The safest object-level check is a scoped queryset: <code class="i">Rental.objects.filter(customer=request.user)</code>. Then other users' data can't be found at all.</li>
+      <li>Hiding a button is not security. Always check permissions on the server.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>Why create a custom user model at the start?</summary><div class="a"><p>Swapping <code class="i">AUTH_USER_MODEL</code> after tables and FKs exist needs complex manual migrations. Starting with <code class="i">AbstractUser</code> costs nothing and lets you add fields later.</p></div></details>
+    <details class="qa"><summary>AbstractUser vs AbstractBaseUser?</summary><div class="a"><p><code class="i">AbstractUser</code> keeps all the default fields (username, email, names) and lets you add more. <code class="i">AbstractBaseUser</code> gives only the password and login logic. You define everything else and write a custom manager, for example for an email-only login.</p></div></details>
+    <details class="qa"><summary>Authentication vs authorization?</summary><div class="a"><p>Authentication checks who you are (login). Authorization checks what you are allowed to do (permissions).</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Create the <code class="i">users</code> app with a custom User <b>before</b> the first migrate.</li>
+      <li>Add login/logout with Django's built-in auth views.</li>
+      <li>Create a "Staff" group that can add movies; customers see only their own rentals.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 09 ============================ -->
+<section class="mod" id="m09" data-group="Web" data-short="The admin">
+  <div class="mod-head">
+    <span class="mod-num">09</span>
+    <h2>The admin</h2>
+    <p class="mod-sum">A free back office. Fast to customize, but for internal staff only.</p>
+    <div class="mod-meta"><span>~15 min</span><label class="done-toggle"><input type="checkbox" id="done-m09"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <div class="wwwh">
+      <div><b>What</b><p>An auto-generated CRUD website for your models.</p></div>
+      <div><b>Why</b><p>Your team gets data tools on day one without building any UI.</p></div>
+      <div><b>When</b><p>Internal operations and support. <b>Not</b> for customers.</p></div>
+      <div><b>How</b><p>Register a <code class="i">ModelAdmin</code> in <code class="i">admin.py</code>.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+class RentalInline(admin.TabularInline):
+    model = Rental
+    extra = 0
+
+@admin.register(Movie)
+class MovieAdmin(admin.ModelAdmin):
+    list_display = ["title", "genre", "daily_rate", "number_in_stock"]
+    list_filter = ["genre"]
+    search_fields = ["title"]
+    list_select_related = ["genre"]      # avoid N+1 in the list page
+    autocomplete_fields = ["genre"]      # good for big FK tables
+    readonly_fields = ["created_at"]
+    inlines = [RentalInline]
+    actions = ["mark_out_of_stock"]
+
+    @admin.action(description="Set stock to 0")
+    def mark_out_of_stock(self, request, queryset):
+        queryset.update(number_in_stock=0)
+</pre></div>
+  </div>
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>In production, change the <code class="i">/admin/</code> URL, require strong passwords or 2FA, and give staff the smallest permissions they need.</li>
+      <li>Big tables: use <code class="i">list_select_related</code> and <code class="i">autocomplete_fields</code>, or the admin will be slow.</li>
+    </ul>
+  </div>
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Add a full <code class="i">MovieAdmin</code> and <code class="i">RentalAdmin</code> with filters, search, inlines and one custom action.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 10 ============================ -->
+<section class="mod" id="m10" data-group="APIs" data-short="REST APIs with DRF">
+  <div class="mod-head">
+    <span class="mod-num">10</span>
+    <h2>REST APIs with Django REST Framework</h2>
+    <p class="mod-sum">The most-used skill in Django jobs. Mobile apps and React frontends talk to these APIs.</p>
+    <div class="mod-meta"><span>~60 min</span><label class="done-toggle"><input type="checkbox" id="done-m10"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>How a DRF request flows</h3>
+    <div class="diagram"><p class="diagram-label">Each step can reject the request</p>
+<pre class="mermaid">
+flowchart LR
+  R["Request"] --> A["Authentication: who?"]
+  A --> P["Permissions: allowed?"]
+  P --> T["Throttling: too many?"]
+  T --> V["View / ViewSet action"]
+  V --> S["Serializer: validate + save"]
+  S --> O["Response: rendered as JSON"]
+</pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Serializers</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>Convert model ↔ JSON, and validate input. Like forms, but for APIs.</p></div>
+      <div><b>Why</b><p>One place for the output shape and the input rules.</p></div>
+      <div><b>When</b><p><code class="i">ModelSerializer</code> for simple CRUD. Plain <code class="i">Serializer</code> for custom input, or separate input/output shapes.</p></div>
+      <div><b>How</b><p><code class="i">is_valid(raise_exception=True)</code>, then <code class="i">save()</code>.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+from rest_framework import serializers
+
+class MovieSerializer(serializers.ModelSerializer):
+    genre_name = serializers.CharField(source="genre.name", read_only=True)
+    is_available = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Movie
+        fields = ["id", "title", "genre", "genre_name", "daily_rate", "number_in_stock", "is_available"]
+        read_only_fields = ["id"]
+
+    def get_is_available(self, obj):
+        return obj.number_in_stock &gt; 0
+
+    def validate_daily_rate(self, value):        # one field
+        if value &gt; 50:
+            raise serializers.ValidationError("Too expensive.")
+        return value
+
+    def validate(self, attrs):                    # several fields
+        return attrs
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Views: pick the right level</h3>
+    <div class="diagram"><p class="diagram-label">Less code going down, less control</p>
+<pre class="mermaid">
+flowchart TB
+  A["APIView: write get/post yourself"] --> B["GenericAPIView + mixins"]
+  B --> C["Generic views: ListCreateAPIView, RetrieveUpdateDestroyAPIView"]
+  B --> D["GenericViewSet"]
+  D --> E["ModelViewSet: full CRUD + router"]
+  A --> F["ViewSet: actions without model helpers"]
+</pre>
+    </div>
+    <div class="code-wrap"><pre class="code">
+from rest_framework import viewsets, permissions
+from rest_framework.decorators import action
+from rest_framework.response import Response
+from rest_framework.routers import DefaultRouter
+
+class MovieViewSet(viewsets.ModelViewSet):
+    serializer_class = MovieSerializer
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    filterset_fields = ["genre"]                    # django-filter
+    search_fields = ["title"]
+    ordering_fields = ["daily_rate", "created_at"]
+
+    def get_queryset(self):
+        return Movie.objects.select_related("genre")   # avoid N+1 here too
+
+    def perform_create(self, serializer):
+        serializer.save(created_by=self.request.user)
+
+    @action(detail=True, methods=["post"])          # POST /movies/5/rent/
+    def rent(self, request, pk=None):
+        rental = rent_movie(request.user, pk)
+        return Response({"rental_id": rental.id}, status=201)
+
+router = DefaultRouter()
+router.register("movies", MovieViewSet, basename="movie")
+urlpatterns = [path("api/v1/", include(router.urls))]
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Authentication options</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Type</th><th>Best for</th><th>Note</th></tr>
+      <tr><td>Session</td><td>Same-domain web frontend</td><td>Uses cookies + CSRF.</td></tr>
+      <tr><td>Token (DRF built-in)</td><td>Simple internal clients</td><td>One token per user, stored in the database.</td></tr>
+      <tr><td>JWT (<code class="i">djangorestframework-simplejwt</code>)</td><td>Mobile apps, SPAs, microservices</td><td>Stateless: short-lived access token + refresh token.</td></tr>
+    </table></div>
+    <div class="diagram"><p class="diagram-label">JWT flow</p>
+<pre class="mermaid">
+sequenceDiagram
+  Client->>API: POST /api/token (username, password)
+  API-->>Client: access token (5 min) + refresh token (1 day)
+  Client->>API: GET /api/v1/movies with header Bearer access
+  API-->>Client: 200 data
+  Client->>API: POST /api/token/refresh (refresh)
+  API-->>Client: new access token
+</pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Settings that every real API needs</h3>
+    <div class="code-wrap"><pre class="code">
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTICATION_CLASSES": [
+        "rest_framework_simplejwt.authentication.JWTAuthentication",
+    ],
+    "DEFAULT_PERMISSION_CLASSES": ["rest_framework.permissions.IsAuthenticated"],  # secure by default
+    "DEFAULT_PAGINATION_CLASS": "rest_framework.pagination.PageNumberPagination",
+    "PAGE_SIZE": 20,
+    "DEFAULT_FILTER_BACKENDS": [
+        "django_filters.rest_framework.DjangoFilterBackend",
+        "rest_framework.filters.SearchFilter",
+        "rest_framework.filters.OrderingFilter",
+    ],
+    "DEFAULT_THROTTLE_CLASSES": ["rest_framework.throttling.UserRateThrottle"],
+    "DEFAULT_THROTTLE_RATES": {"user": "1000/hour"},
+    "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",   # OpenAPI docs
+}
+</pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Need</th><th>Tool</th></tr>
+      <tr><td>Pagination</td><td><code class="i">PageNumber</code> (simple), <code class="i">LimitOffset</code>, <code class="i">Cursor</code> (huge or changing lists; stable and fast)</td></tr>
+      <tr><td>Filtering</td><td><code class="i">django-filter</code>, <code class="i">SearchFilter</code>, <code class="i">OrderingFilter</code></td></tr>
+      <tr><td>Object permission</td><td>Custom <code class="i">BasePermission.has_object_permission()</code></td></tr>
+      <tr><td>Versioning</td><td>URL path <code class="i">/api/v1/</code> (most common) or <code class="i">AcceptHeaderVersioning</code></td></tr>
+      <tr><td>API docs</td><td><code class="i">drf-spectacular</code>: Swagger UI from OpenAPI 3</td></tr>
+      <tr><td>Error format</td><td>Custom <code class="i">EXCEPTION_HANDLER</code>, so every error has the same JSON shape</td></tr>
+    </table></div>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>Serializers that touch related fields cause N+1. Always optimize <code class="i">get_queryset()</code>.</li>
+      <li>Set <code class="i">IsAuthenticated</code> as the default, and open endpoints up on purpose.</li>
+      <li>Scope data per user in <code class="i">get_queryset()</code>. Otherwise users can read others' records by changing the ID (an IDOR bug).</li>
+      <li>Keep business logic out of serializers. Call a service function instead (Module 15).</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>APIView vs GenericAPIView vs ViewSet vs ModelViewSet?</summary><div class="a"><p><code class="i">APIView</code>: you write each HTTP method yourself. <code class="i">GenericAPIView</code> adds queryset, serializer and pagination helpers. <code class="i">ViewSet</code> groups actions (list, retrieve) for routers. <code class="i">ModelViewSet</code> = full CRUD with almost no code.</p></div></details>
+    <details class="qa"><summary>Session auth vs JWT?</summary><div class="a"><p>Session auth is stateful: the server stores the session, it is easy to revoke and needs CSRF. JWT is stateless: a signed token, scales without session storage and suits mobile apps. But it is hard to revoke before it expires, so keep access tokens short-lived and use refresh tokens with rotation and a blacklist.</p></div></details>
+    <details class="qa"><summary>How do you validate in a serializer?</summary><div class="a"><p>Field options (<code class="i">max_length</code>, validators), <code class="i">validate_&lt;field&gt;()</code> for one field, <code class="i">validate()</code> for several fields, and model or database constraints as the final guard.</p></div></details>
+    <details class="qa"><summary>How do you design an API for web, mobile and third parties?</summary><div class="a"><p>Versioned URLs, a consistent response and error format, pagination, filtering, auth that fits each client, throttling, OpenAPI docs and backward-compatible changes.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol>
+      <li>Build <code class="i">/api/v1/movies/</code> with a ModelViewSet, a router, pagination and a genre filter.</li>
+      <li>Add JWT login with simplejwt, and a <code class="i">POST /movies/{id}/rent/</code> action.</li>
+      <li>Add <code class="i">drf-spectacular</code> and open Swagger at <code class="i">/api/docs/</code>.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ 11 ============================ -->
+<section class="mod" id="m11" data-group="Internals" data-short="Middleware and signals">
+  <div class="mod-head">
+    <span class="mod-num">11</span>
+    <h2>Middleware and signals</h2>
+    <p class="mod-sum">Hooks around every request, and hooks around model events.</p>
+    <div class="mod-meta"><span>~25 min</span><label class="done-toggle"><input type="checkbox" id="done-m11"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>Middleware</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>Code that runs before and after every view.</p></div>
+      <div><b>Why</b><p>For cross-cutting jobs: auth, sessions, CSRF, logging, request IDs, timing.</p></div>
+      <div><b>When</b><p>When something must happen for <i>all</i> requests. For a single view, use a decorator.</p></div>
+      <div><b>How</b><p>A class with <code class="i">__init__(get_response)</code> and <code class="i">__call__(request)</code>, added to <code class="i">MIDDLEWARE</code>.</p></div>
+    </div>
+    <div class="diagram"><p class="diagram-label">The onion: down on request, back up on response</p>
+<pre class="mermaid">
+flowchart TB
+  IN["Request in"] --> S1["SecurityMiddleware"]
+  S1 --> S2["SessionMiddleware"]
+  S2 --> S3["CsrfViewMiddleware"]
+  S3 --> S4["AuthenticationMiddleware: sets request.user"]
+  S4 --> V["View"]
+  V -.->|"response goes back up in reverse order"| OUT["Response out"]
+</pre>
+    </div>
+    <div class="code-wrap"><pre class="code">
+import time, uuid
+
+class RequestTimingMiddleware:
+    def __init__(self, get_response):
+        self.get_response = get_response          # runs ONCE at startup
+
+    def __call__(self, request):
+        request.id = uuid.uuid4().hex              # BEFORE the view
+        start = time.monotonic()
+        response = self.get_response(request)     # calls the next layer
+        ms = (time.monotonic() - start) * 1000     # AFTER the view
+        response["X-Request-ID"] = request.id
+        response["X-Response-Time-ms"] = f"{ms:.0f}"
+        return response
+</pre></div>
+    <p>Optional hooks: <code class="i">process_view</code>, <code class="i">process_exception</code>, <code class="i">process_template_response</code>. Order matters. For example, <code class="i">AuthenticationMiddleware</code> needs <code class="i">SessionMiddleware</code> above it.</p>
+  </div>
+
+  <div class="topic">
+    <h3>Signals</h3>
+    <div class="wwwh">
+      <div><b>What</b><p>"When X happens, also run Y." Examples: <code class="i">post_save</code>, <code class="i">pre_delete</code>, <code class="i">user_logged_in</code>.</p></div>
+      <div><b>Why</b><p>To react to events in code you don't own (third-party or Django apps).</p></div>
+      <div><b>When to avoid</b><p>For your own business logic. The hidden flow is hard to debug and test. Call a service function instead.</p></div>
+      <div><b>How</b><p><code class="i">@receiver(post_save, sender=Rental)</code>, connected in <code class="i">AppConfig.ready()</code>.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+# users/signals.py
+@receiver(post_save, sender=settings.AUTH_USER_MODEL)
+def create_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+
+# users/apps.py
+class UsersConfig(AppConfig):
+    name = "users"
+    def ready(self):
+        from . import signals  # noqa: connect receivers
+</pre></div>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>Signals do <b>not</b> fire on <code class="i">queryset.update()</code>, <code class="i">bulk_create()</code> or <code class="i">DB_CASCADE</code>.</li>
+      <li>Signals run in the same transaction and thread. A slow receiver slows every save.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>What is middleware? Give real examples.</summary><div class="a"><p>A layer that processes every request and response. Examples: SecurityMiddleware (HTTPS headers), SessionMiddleware, CsrfViewMiddleware, AuthenticationMiddleware (sets <code class="i">request.user</code>), custom request-ID or timing middleware.</p></div></details>
+    <details class="qa"><summary>Are signals good practice?</summary><div class="a"><p>Use them for decoupling from apps you don't control. Avoid them for core business logic: the flow is hidden, they're easy to break and they're skipped by bulk operations. Explicit service calls are clearer.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Add <code class="i">RequestTimingMiddleware</code> and log slow requests (&gt;500 ms).</li><li>Create a Profile automatically for each new user with a signal.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 12 ============================ -->
+<section class="mod" id="m12" data-group="Scale" data-short="Caching">
+  <div class="mod-head">
+    <span class="mod-num">12</span>
+    <h2>Caching</h2>
+    <p class="mod-sum">Don't compute the same thing twice. Usually done with Redis.</p>
+    <div class="mod-meta"><span>~25 min</span><label class="done-toggle"><input type="checkbox" id="done-m12"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <div class="wwwh">
+      <div><b>What</b><p>Store a result in fast memory and reuse it.</p></div>
+      <div><b>Why</b><p>Fewer database hits and faster pages, so you need fewer servers.</p></div>
+      <div><b>When</b><p>Data that is read often, changes rarely, or is expensive to compute.</p></div>
+      <div><b>How</b><p>Configure <code class="i">CACHES</code> (Redis is built in), then pick a level.</p></div>
+    </div>
+    <div class="diagram"><p class="diagram-label">Which cache level?</p>
+<pre class="mermaid">
+flowchart TD
+  Q{"What do you want to cache?"}
+  Q -->|"Whole site, anonymous users"| A["Per-site cache middleware"]
+  Q -->|"One full page"| B["cache_page decorator"]
+  Q -->|"Part of a template"| C["cache template tag (fragment)"]
+  Q -->|"Data or a query result"| D["Low-level API: cache.get / cache.set"]
+</pre>
+    </div>
+    <div class="code-wrap"><pre class="code">
+CACHES = {
+    "default": {
+        "BACKEND": "django.core.cache.backends.redis.RedisCache",
+        "LOCATION": "redis://127.0.0.1:6379/1",
+    }
+}
+
+from django.core.cache import cache
+from django.views.decorators.cache import cache_page
+
+@cache_page(60 * 5)                     # whole view, 5 minutes
+def movie_list(request): ...
+
+def top_movies():                        # cache-aside pattern
+    data = cache.get("top_movies")
+    if data is None:
+        data = list(Movie.objects.order_by("-rentals_count")[:10].values("id", "title"))
+        cache.set("top_movies", data, timeout=600)
+    return data
+</pre></div>
+    <div class="diagram"><p class="diagram-label">Cache-aside (most common)</p>
+<pre class="mermaid">
+flowchart LR
+  A["Need data"] --> B{"In cache?"}
+  B -->|"Yes (hit)"| C["Return it"]
+  B -->|"No (miss)"| D["Query database"]
+  D --> E["cache.set with timeout"]
+  E --> C
+</pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Invalidation: the hard part</h3>
+    <ul class="tight">
+      <li><b>Timeout (TTL)</b>: simple. The data can be stale for up to N seconds.</li>
+      <li><b>Delete on change</b>: <code class="i">cache.delete("top_movies")</code> after a save (use <code class="i">on_commit</code>).</li>
+      <li><b>Versioned keys</b>: <code class="i">f"movie:{id}:v{updated_at}"</code>. Old keys just expire.</li>
+      <li><b>Stampede</b>: many requests miss at once and all hit the database. Use a lock or <code class="i">cache.get_or_set</code> with staggered TTLs.</li>
+    </ul>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li>Never cache pages with personal data in a shared cache by mistake. Use <code class="i">vary_on_cookie</code> or cache the data only.</li>
+      <li><code class="i">LocMemCache</code> is per process. With 4 workers you get 4 different caches. Use Redis in production.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>What caching levels does Django offer?</summary><div class="a"><p>Per-site (middleware), per-view (<code class="i">cache_page</code>), template fragment (<code class="i">{% cache %}</code>) and the low-level API (<code class="i">cache.get/set</code>). Plus HTTP caching with ETag/Cache-Control and a CDN in front.</p></div></details>
+    <details class="qa"><summary>How do you keep cached data fresh?</summary><div class="a"><p>A short TTL for data that can be a bit stale, explicit delete on write (after commit) for data that must be fresh, or versioned keys. Prevent stampedes with locks or jitter.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Run Redis in Docker: <code class="i">docker run -p 6379:6379 redis</code>.</li><li>Cache "top 10 movies" for 10 minutes; delete the key when a movie is saved.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 13 ============================ -->
+<section class="mod" id="m13" data-group="Scale" data-short="Background tasks">
+  <div class="mod-head">
+    <span class="mod-num">13</span>
+    <h2>Background tasks</h2>
+    <p class="mod-sum">Do slow work outside the request, so users don't wait.</p>
+    <div class="mod-meta"><span>~30 min</span><label class="done-toggle"><input type="checkbox" id="done-m13"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <div class="wwwh">
+      <div><b>What</b><p>Send work to a queue. A separate worker process runs it.</p></div>
+      <div><b>Why</b><p>Requests stay fast, and failed jobs can retry.</p></div>
+      <div><b>When</b><p>Emails, reports, image processing, calls to slow APIs, scheduled jobs.</p></div>
+      <div><b>How</b><p>Celery (industry standard) or the built-in Django Tasks framework (6.0+).</p></div>
+    </div>
+    <div class="diagram"><p class="diagram-label">Celery architecture</p>
+<pre class="mermaid">
+flowchart LR
+  V["Django view"] -->|"task.delay(id)"| B[("Broker: Redis or RabbitMQ")]
+  BEAT["Celery Beat: scheduler"] -->|"every night"| B
+  B --> W1["Worker 1"]
+  B --> W2["Worker 2"]
+  W1 --> DB[("Database")]
+  W2 --> DB
+  W1 --> RB[("Result backend, optional")]
+</pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Celery setup (short)</h3>
+    <div class="code-wrap"><pre class="code">
+# config/celery.py
+import os
+from celery import Celery
+os.environ.setdefault("DJANGO_SETTINGS_MODULE", "config.settings")
+app = Celery("config")
+app.config_from_object("django.conf:settings", namespace="CELERY")
+app.autodiscover_tasks()
+
+# config/__init__.py
+from .celery import app as celery_app
+__all__ = ("celery_app",)
+
+# settings.py
+CELERY_BROKER_URL = "redis://localhost:6379/0"
+
+# rentals/tasks.py
+from celery import shared_task
+
+@shared_task(bind=True, autoretry_for=(ConnectionError,), retry_backoff=True, max_retries=5)
+def send_receipt(self, rental_id):            # pass IDs, not objects
+    rental = Rental.objects.get(pk=rental_id)
+    email_service.send_receipt(rental)
+
+# in a service, after saving:
+send_receipt.delay_on_commit(rental.id)       # Celery 5.4+: waits for COMMIT
+
+# run a worker
+# celery -A config worker -l INFO
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Django Tasks (6.0+) vs Celery</h3>
+    <div class="table-wrap"><table>
+      <tr><th></th><th>Django Tasks (built-in)</th><th>Celery</th></tr>
+      <tr><td>API</td><td><code class="i">@task</code> + <code class="i">.enqueue()</code></td><td><code class="i">@shared_task</code> + <code class="i">.delay()</code></td></tr>
+      <tr><td>Worker</td><td>Not included. Needs a backend package or your own worker.</td><td>Included, mature</td></tr>
+      <tr><td>Retries, scheduling, routing</td><td>Basic, depends on the backend</td><td>Full: retries, beat, chains, priorities</td></tr>
+      <tr><td>Pick it when</td><td>New, simple projects</td><td>Enterprise work today. Most jobs ask for Celery.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul>
+      <li><b>Idempotent tasks</b>: a task may run twice (retry, crash). Running it again must not double-charge or double-email.</li>
+      <li>Pass IDs, not model objects. The object may be outdated by the time the task runs.</li>
+      <li>Keep business logic in services. The task just loads data and calls the service.</li>
+      <li>Monitor the queue length and failures (Flower, Sentry).</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>How do you handle background jobs reliably?</summary><div class="a"><p>A Celery queue with a broker, idempotent tasks, retries with backoff, IDs passed (not objects), enqueue after commit, timeouts, a dead-letter or alerting process for failures, and monitoring of queue length.</p></div></details>
+    <details class="qa"><summary>What is idempotency and why does it matter?</summary><div class="a"><p>Running an operation many times gives the same result as running it once. Queues deliver "at least once", so tasks can repeat. Use unique keys, status checks or database constraints to make the repeats safe.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Set up Celery with Redis.</li><li>Send a rental receipt email in a task with <code class="i">delay_on_commit</code>.</li><li>Add a nightly Celery Beat task that marks overdue rentals.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 14 ============================ -->
+<section class="mod" id="m14" data-group="Scale" data-short="Async and real-time">
+  <div class="mod-head">
+    <span class="mod-num">14</span>
+    <h2>Async and real-time</h2>
+    <p class="mod-sum">ASGI, async views and WebSockets: when they help and when they don't.</p>
+    <div class="mod-meta"><span>~25 min</span><label class="done-toggle"><input type="checkbox" id="done-m14"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <div class="diagram"><p class="diagram-label">WSGI vs ASGI</p>
+<pre class="mermaid">
+flowchart LR
+  C["Clients"] --> S{"Server interface"}
+  S -->|"WSGI: Gunicorn"| W["Sync: one request per worker thread"]
+  S -->|"ASGI: Uvicorn / Daphne"| A["Async: many requests per event loop + WebSockets"]
+</pre>
+    </div>
+    <div class="wwwh">
+      <div><b>What</b><p><code class="i">async def</code> views that can wait on I/O without blocking a worker.</p></div>
+      <div><b>Why</b><p>Many slow external calls (APIs, LLMs) can run at the same time.</p></div>
+      <div><b>When</b><p>I/O-heavy work, many outside calls, streaming, WebSockets.</p></div>
+      <div><b>Not when</b><p>Normal CRUD or CPU-heavy work. Sync is simpler and just as fast there.</p></div>
+    </div>
+    <div class="code-wrap"><pre class="code">
+import asyncio, httpx
+
+async def movie_ratings(request, pk):
+    movie = await Movie.objects.aget(pk=pk)              # async ORM: aget, acreate, acount...
+    async with httpx.AsyncClient(timeout=5) as client:
+        imdb, rt = await asyncio.gather(                 # two calls at the same time
+            client.get(f"https://api.example.com/imdb/{movie.slug}"),
+            client.get(f"https://api.example.com/rt/{movie.slug}"),
+        )
+    return JsonResponse({"imdb": imdb.json(), "rt": rt.json()})
+
+# loop over a queryset asynchronously
+async for m in Movie.objects.filter(genre_id=1):
+    ...
+
+# call sync code from async code
+from asgiref.sync import sync_to_async
+await sync_to_async(some_sync_function)()
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Real-time with Django Channels</h3>
+    <ul class="tight">
+      <li><b>Channels</b> adds WebSockets: chat, live notifications, dashboards.</li>
+      <li><b>Consumer</b> = a "view" for a WebSocket connection. A <b>channel layer</b> (Redis) sends messages between processes.</li>
+      <li>Simpler option for one-way updates: Server-Sent Events (SSE) or polling.</li>
+    </ul>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul><li>Calling blocking code (sync ORM, <code class="i">requests</code>) inside an async view blocks the whole event loop. Use async libraries or <code class="i">sync_to_async</code>.</li><li>Under ASGI, a mix of sync and async middleware causes extra thread switching.</li></ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>WSGI vs ASGI?</summary><div class="a"><p>WSGI is the synchronous standard: one request at a time per worker. ASGI is its async successor: it supports async views, long connections, WebSockets and HTTP/2. Django supports both.</p></div></details>
+    <details class="qa"><summary>Does async make Django faster?</summary><div class="a"><p>Only for I/O-bound waiting, such as many outside calls at once. It doesn't speed up CPU work or simple database CRUD. Scale those with more workers, caching and query optimization.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Write an async view that calls 2 public APIs at the same time with <code class="i">httpx</code>, and compare the timing with a sync version.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 15 ============================ -->
+<section class="mod" id="m15" data-group="Enterprise" data-short="Enterprise architecture">
+  <div class="mod-head">
+    <span class="mod-num">15</span>
+    <h2>Enterprise architecture</h2>
+    <p class="mod-sum">How to structure a big Django codebase so a team can grow it for years.</p>
+    <div class="mod-meta"><span>~40 min</span><label class="done-toggle"><input type="checkbox" id="done-m15"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>Project layout</h3>
+    <div class="code-wrap"><pre class="code">
+vidly-pro/
+├── config/
+│   ├── settings/
+│   │   ├── base.py         # shared
+│   │   ├── local.py        # DEBUG, debug toolbar
+│   │   ├── test.py         # fast password hasher, etc.
+│   │   └── production.py   # security, logging, real services
+│   ├── urls.py
+│   ├── asgi.py / wsgi.py
+│   └── celery.py
+├── vidly/                  # your apps live here
+│   ├── common/             # BaseModel, utils, exceptions
+│   ├── users/
+│   ├── movies/
+│   │   ├── models.py
+│   │   ├── services.py     # WRITE logic: movie_create, rent_movie
+│   │   ├── selectors.py    # READ logic: movie_list, available_movies
+│   │   ├── apis.py         # DRF views: thin
+│   │   ├── serializers.py
+│   │   ├── tasks.py
+│   │   └── tests/
+│   └── rentals/
+├── .env.example            # committed; real .env is NOT
+├── requirements/ or pyproject.toml
+├── Dockerfile
+└── docker-compose.yml
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Where does business logic live?</h3>
+    <div class="diagram"><p class="diagram-label">Layers (HackSoft Django Styleguide style)</p>
+<pre class="mermaid">
+flowchart TB
+  API["Views / APIs: HTTP in and out only"] --> SRV["Services: writes + business rules"]
+  API --> SEL["Selectors: reads + query logic"]
+  TSK["Celery tasks"] --> SRV
+  ADM["Admin, commands"] --> SRV
+  SRV --> M["Models: data + simple rules"]
+  SEL --> M
+  M --> DB[("Database")]
+</pre>
+    </div>
+    <div class="code-wrap"><pre class="code">
+# movies/services.py
+@transaction.atomic
+def rental_create(*, customer: User, movie_id: int) -&gt; Rental:
+    movie = Movie.objects.select_for_update().get(pk=movie_id)
+    if movie.number_in_stock &lt; 1:
+        raise ApplicationError("Movie is out of stock.")
+    movie.number_in_stock -= 1
+    movie.save(update_fields=["number_in_stock"])
+    rental = Rental.objects.create(customer=customer, movie=movie)
+    send_receipt.delay_on_commit(rental.id)
+    return rental
+
+# movies/apis.py: thin
+class RentalCreateApi(APIView):
+    class InputSerializer(serializers.Serializer):
+        movie_id = serializers.IntegerField()
+
+    def post(self, request):
+        s = self.InputSerializer(data=request.data)
+        s.is_valid(raise_exception=True)
+        rental = rental_create(customer=request.user, **s.validated_data)
+        return Response({"id": rental.id}, status=201)
+</pre></div>
+    <div class="table-wrap"><table>
+      <tr><th>Approach</th><th>Pros</th><th>Cons</th></tr>
+      <tr><td>Fat views</td><td>Fast to write</td><td>Logic can't be reused from tasks, admin or commands. Hard to test.</td></tr>
+      <tr><td>Fat models</td><td>The "Django way" for small apps</td><td>Models become huge, and logic across many models doesn't fit.</td></tr>
+      <tr><td><b>Services + selectors</b></td><td>Reusable, testable, clear</td><td>More files. Some say it's "not Django-like". Most popular for big teams.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="topic">
+    <h3>Settings and secrets</h3>
+    <div class="code-wrap"><pre class="code">
+# config/settings/base.py  (pip install django-environ)
+import environ
+env = environ.Env()
+environ.Env.read_env(BASE_DIR / ".env")
+
+SECRET_KEY = env("DJANGO_SECRET_KEY")
+DEBUG = env.bool("DJANGO_DEBUG", default=False)
+DATABASES = {"default": env.db("DATABASE_URL")}   # postgres://user:pass@host:5432/db
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=[])
+
+# run with: DJANGO_SETTINGS_MODULE=config.settings.production
+</pre></div>
+  </div>
+
+  <div class="topic">
+    <h3>Other enterprise patterns</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Pattern</th><th>Why / when</th></tr>
+      <tr><td><code class="i">BaseModel</code> with created_at / updated_at</td><td>Every table gets timestamps for auditing and debugging.</td></tr>
+      <tr><td>UUID public IDs</td><td>Don't expose guessable 1, 2, 3 IDs in public URLs.</td></tr>
+      <tr><td>Soft delete (<code class="i">deleted_at</code>)</td><td>Recover data and keep history. Filter it out with a custom manager.</td></tr>
+      <tr><td>Multiple databases + router</td><td>Send reads to a replica and writes to the primary.</td></tr>
+      <tr><td>Multi-tenancy</td><td>SaaS for many companies: a shared table with <code class="i">tenant_id</code>, or a schema per tenant (django-tenants).</td></tr>
+      <tr><td>Structured logging</td><td>JSON logs with the request ID, so you can trace one request across services.</td></tr>
+      <tr><td>Custom exceptions + one error format</td><td>Clients always get <code class="i">{"message": ..., "extra": ...}</code>.</td></tr>
+      <tr><td>Modular monolith first</td><td>Split into microservices only when a team or scale problem really needs it.</td></tr>
+    </table></div>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>How would you structure a large Django project?</summary><div class="a"><p>Small, focused apps with clear boundaries, split settings per environment, secrets in environment variables, a services/selectors layer for business logic, thin views and serializers, shared base models and exceptions, tests per layer, and Docker plus CI from day one.</p></div></details>
+    <details class="qa"><summary>Where should business logic go in Django?</summary><div class="a"><p>Not in views, serializers or signals. Put it in services (writes) and selectors (reads), or in model methods for simple single-model rules. Then views, tasks, admin and commands can all reuse it, and you can unit-test it.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Split the settings into base/local/test/production, and move secrets to <code class="i">.env</code>.</li><li>Move rental logic into <code class="i">rentals/services.py</code>; the API and admin action both call it.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 16 ============================ -->
+<section class="mod" id="m16" data-group="Enterprise" data-short="Testing">
+  <div class="mod-head">
+    <span class="mod-num">16</span>
+    <h2>Testing</h2>
+    <p class="mod-sum">Tests let you change code without fear.</p>
+    <div class="mod-meta"><span>~35 min</span><label class="done-toggle"><input type="checkbox" id="done-m16"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <div class="pyramid" aria-label="Test pyramid">
+      <div>E2E / browser tests: few</div>
+      <div>API / integration tests: some</div>
+      <div>Unit tests (services, selectors, models): many</div>
+    </div>
+    <div class="table-wrap"><table>
+      <tr><th>Class</th><th>Database</th><th>Use for</th></tr>
+      <tr><td><code class="i">SimpleTestCase</code></td><td>None</td><td>Pure logic, forms without the database</td></tr>
+      <tr><td><code class="i">TestCase</code></td><td>Each test in a transaction that is rolled back (fast)</td><td>Most tests</td></tr>
+      <tr><td><code class="i">TransactionTestCase</code></td><td>Tables truncated (slow)</td><td>Testing <code class="i">on_commit</code>, real transactions, locks</td></tr>
+      <tr><td><code class="i">APITestCase</code> / <code class="i">APIClient</code></td><td>Like TestCase</td><td>DRF endpoints</td></tr>
+    </table></div>
+  </div>
+
+  <div class="topic">
+    <h3>pytest-django + factory_boy (the industry favorite)</h3>
+    <div class="code-wrap"><pre class="code">
+# conftest.py / factories.py
+import factory
+
+class MovieFactory(factory.django.DjangoModelFactory):
+    class Meta:
+        model = Movie
+    title = factory.Faker("sentence", nb_words=3)
+    genre = factory.SubFactory(GenreFactory)
+    daily_rate = 3
+    number_in_stock = 1
+
+# tests/test_services.py
+import pytest
+
+@pytest.mark.django_db
+def test_rental_create_reduces_stock(user):
+    movie = MovieFactory(number_in_stock=1)
+    rental_create(customer=user, movie_id=movie.id)
+    movie.refresh_from_db()
+    assert movie.number_in_stock == 0
+
+@pytest.mark.django_db
+def test_rental_fails_when_out_of_stock(user):
+    movie = MovieFactory(number_in_stock=0)
+    with pytest.raises(ApplicationError):
+        rental_create(customer=user, movie_id=movie.id)
+
+# tests/test_apis.py
+@pytest.mark.django_db
+def test_movie_list_queries(api_client, django_assert_num_queries):
+    MovieFactory.create_batch(5)
+    with django_assert_num_queries(2):          # count + page: no N+1
+        r = api_client.get("/api/v1/movies/")
+    assert r.status_code == 200
+</pre></div>
+    <ul class="tight">
+      <li><b>Mock</b> external things (payment, email, HTTP) with <code class="i">unittest.mock.patch</code> or <code class="i">responses</code>.</li>
+      <li><b>Coverage</b>: <code class="i">pytest --cov</code>. Aim for high coverage on services, not 100% everywhere.</li>
+      <li><b>CI</b>: run the tests and <code class="i">makemigrations --check</code> on every pull request.</li>
+    </ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>TestCase vs TransactionTestCase?</summary><div class="a"><p><code class="i">TestCase</code> wraps each test in a transaction and rolls it back, which is fast, but <code class="i">on_commit</code> callbacks don't fire unless you use <code class="i">captureOnCommitCallbacks</code>. <code class="i">TransactionTestCase</code> really commits and truncates the tables afterwards. It's slower, but needed for real transaction behavior.</p></div></details>
+    <details class="qa"><summary>What is your testing approach?</summary><div class="a"><p>Many fast unit tests for services and selectors, API tests for each endpoint (auth, permissions, validation, query count), factories for data, mocks for external services, and everything run in CI on each pull request.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Install pytest-django + factory_boy.</li><li>Test <code class="i">rental_create</code> (success, out of stock) and the movies API (auth, filter, query count).</li><li>Run them in GitHub Actions.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 17 ============================ -->
+<section class="mod" id="m17" data-group="Production" data-short="Security">
+  <div class="mod-head">
+    <span class="mod-num">17</span>
+    <h2>Security</h2>
+    <p class="mod-sum">Django protects you by default. Know what it does, and what is still your job.</p>
+    <div class="mod-meta"><span>~25 min</span><label class="done-toggle"><input type="checkbox" id="done-m17"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <div class="table-wrap"><table>
+      <tr><th>Attack</th><th>Django's protection</th><th>Your job</th></tr>
+      <tr><td>SQL injection</td><td>The ORM uses query parameters</td><td>Never put user input into raw SQL with f-strings</td></tr>
+      <tr><td>XSS</td><td>Templates auto-escape</td><td>Avoid <code class="i">|safe</code> and <code class="i">mark_safe</code> on user input; add CSP</td></tr>
+      <tr><td>CSRF</td><td><code class="i">CsrfViewMiddleware</code> + token</td><td>Use <code class="i">{% csrf_token %}</code>; don't use <code class="i">@csrf_exempt</code> without a reason</td></tr>
+      <tr><td>Clickjacking</td><td><code class="i">XFrameOptionsMiddleware</code></td><td>Keep it on</td></tr>
+      <tr><td>Host header attacks</td><td><code class="i">ALLOWED_HOSTS</code></td><td>Set it to your real domains</td></tr>
+      <tr><td>Weak passwords</td><td>Password validators + hashing</td><td>Rate-limit logins (django-axes), offer 2FA</td></tr>
+      <tr><td>IDOR (seeing others' data)</td><td>Nothing automatic</td><td>Scope querysets to <code class="i">request.user</code></td></tr>
+      <tr><td>Leaked secrets</td><td>Nothing automatic</td><td>Environment variables, <code class="i">.gitignore</code>, rotate keys with <code class="i">SECRET_KEY_FALLBACKS</code></td></tr>
+    </table></div>
+  </div>
+
+  <div class="topic">
+    <h3>Production security settings</h3>
+    <div class="code-wrap"><pre class="code">
+DEBUG = False
+ALLOWED_HOSTS = ["vidly.com"]
+SECURE_SSL_REDIRECT = True
+SESSION_COOKIE_SECURE = True
+CSRF_COOKIE_SECURE = True
+SECURE_HSTS_SECONDS = 31536000            # start small, then increase
+SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")   # behind Nginx/load balancer
+
+# Django 6.0+: Content Security Policy
+from django.utils.csp import CSP
+MIDDLEWARE += ["django.middleware.csp.ContentSecurityPolicyMiddleware"]
+SECURE_CSP = {"default-src": [CSP.SELF], "script-src": [CSP.SELF, CSP.NONCE]}
+
+# Then run:
+# python manage.py check --deploy
+</pre></div>
+  </div>
+
+  <div class="callout warn">
+    <b>Watch out</b>
+    <ul><li><code class="i">DEBUG = True</code> in production shows your settings and code to everyone on error pages.</li><li>Scan dependencies regularly: <code class="i">pip-audit</code>, Dependabot.</li></ul>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>How does Django prevent SQL injection and XSS?</summary><div class="a"><p>SQL injection: the ORM sends values as query parameters, never as part of the SQL string. XSS: templates escape HTML characters in variables by default. Both break if you bypass them (raw SQL with string formatting, <code class="i">|safe</code> on user input).</p></div></details>
+    <details class="qa"><summary>What do you check before going live?</summary><div class="a"><p>Run <code class="i">check --deploy</code>; set DEBUG off, a secret key from the environment, ALLOWED_HOSTS, HTTPS redirect, secure cookies and HSTS; protect the admin; turn on logging and error tracking; set up database backups.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Run <code class="i">check --deploy</code> with production settings and fix every warning.</li><li>Add CSP and login rate limiting.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 18 ============================ -->
+<section class="mod" id="m18" data-group="Production" data-short="Deployment and operations">
+  <div class="mod-head">
+    <span class="mod-num">18</span>
+    <h2>Deployment and operations</h2>
+    <p class="mod-sum">From laptop to a production system that scales and can be watched.</p>
+    <div class="mod-meta"><span>~40 min</span><label class="done-toggle"><input type="checkbox" id="done-m18"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>Production architecture</h3>
+    <div class="diagram"><p class="diagram-label">A typical enterprise setup</p>
+<pre class="mermaid">
+flowchart LR
+  U["Users"] --> CDN["CDN: static + media"]
+  U --> LB["Load balancer / Nginx: HTTPS"]
+  LB --> A1["Django container: Gunicorn"]
+  LB --> A2["Django container: Gunicorn"]
+  A1 --> PG[("PostgreSQL primary")]
+  A2 --> PG
+  PG --> RR[("Read replica")]
+  A1 --> RD[("Redis: cache + broker")]
+  A2 --> RD
+  RD --> CW["Celery workers"]
+  CW --> PG
+  A1 -.-> OBS["Logs, Sentry, metrics"]
+</pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>Docker</h3>
+    <div class="code-wrap"><pre class="code">
+# Dockerfile
+FROM python:3.12-slim
+ENV PYTHONDONTWRITEBYTECODE=1 PYTHONUNBUFFERED=1
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+RUN python manage.py collectstatic --noinput
+RUN useradd -m app &amp;&amp; chown -R app /app
+USER app                                   # never run as root
+CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers", "4"]
+# async app: gunicorn config.asgi:application -k uvicorn.workers.UvicornWorker
+</pre></div>
+    <p>With <code class="i">docker-compose.yml</code>, run <b>web</b>, <b>db</b> (Postgres), <b>redis</b> and <b>worker</b> (Celery) together locally. A common Gunicorn starting point is <code class="i">workers = 2 × CPU cores + 1</code>.</p>
+  </div>
+
+  <div class="topic">
+    <h3>Static and media files</h3>
+    <div class="wwwh">
+      <div><b>Static</b><p>Your CSS/JS/images. <code class="i">collectstatic</code> copies them to <code class="i">STATIC_ROOT</code>. Serve them with WhiteNoise, Nginx or a CDN.</p></div>
+      <div><b>Media</b><p>Files users upload. Store them in S3 or similar (django-storages), never on the container disk.</p></div>
+      <div><b>Why</b><p>Containers are temporary. Files saved inside them are lost on redeploy.</p></div>
+      <div><b>Rule</b><p>Django should not serve files in production. Let Nginx, a CDN or WhiteNoise do it.</p></div>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>CI/CD pipeline</h3>
+    <div class="diagram"><p class="diagram-label">Every push to main</p>
+<pre class="mermaid">
+flowchart LR
+  P["git push"] --> L["Lint + type check"]
+  L --> T["Tests + makemigrations --check"]
+  T --> B["Build Docker image"]
+  B --> M["Run migrate (one job)"]
+  M --> D["Deploy new containers"]
+  D --> H["Health check + monitor errors"]
+</pre>
+    </div>
+  </div>
+
+  <div class="topic">
+    <h3>How to scale, step by step</h3>
+    <ol class="tight">
+      <li><b>Measure</b> with an APM tool and logs. Find the real bottleneck.</li>
+      <li><b>Fix queries</b>: N+1, indexes, <code class="i">only()</code>.</li>
+      <li><b>Cache</b> hot data in Redis; put a CDN in front of static files.</li>
+      <li><b>Move slow work</b> to Celery.</li>
+      <li><b>Add app servers</b> behind a load balancer. Django is stateless when sessions and files are kept outside the server.</li>
+      <li><b>Scale the database</b>: connection pooling (PgBouncer, or the Postgres pool option in Django 5.1+), read replicas, then partitioning.</li>
+    </ol>
+  </div>
+
+  <div class="iq">
+    <h4>Interview</h4>
+    <details class="qa"><summary>How do you deploy Django to production?</summary><div class="a"><p>A Docker image runs Gunicorn (WSGI) or Uvicorn (ASGI) behind Nginx or a load balancer with HTTPS. Use Postgres, Redis for cache and broker, and Celery workers. Static files go through WhiteNoise or a CDN, media to S3. CI runs the tests, migrations run as a separate step, and Sentry and logging monitor the app.</p></div></details>
+    <details class="qa"><summary>How do you scale a Django app?</summary><div class="a"><p>Measure first. Then optimize queries, add caching, move work to background tasks, scale app servers horizontally (stateless), and scale the database with pooling, replicas and partitioning.</p></div></details>
+    <details class="qa"><summary>Static vs media files?</summary><div class="a"><p>Static files are part of your code (CSS/JS) and are collected at build time. Media files are uploaded by users at runtime and need persistent storage such as S3.</p></div></details>
+  </div>
+
+  <div class="task">
+    <h4>Practice: Vidly Pro</h4>
+    <ol><li>Write a Dockerfile and a docker-compose file (web, db, redis, worker).</li><li>Add a GitHub Actions workflow: tests, then build.</li><li>Deploy to Render, Railway or Fly.io, and connect Sentry.</li></ol>
+  </div>
+</section>
+
+<!-- ============================ 19 ============================ -->
+<section class="mod" id="m19" data-group="Interview" data-short="Interview prep">
+  <div class="mod-head">
+    <span class="mod-num">19</span>
+    <h2>Interview prep</h2>
+    <p class="mod-sum">Rapid-fire questions, a simple answer formula and a cheat sheet for revision.</p>
+    <div class="mod-meta"><span>~45 min, then repeat</span><label class="done-toggle"><input type="checkbox" id="done-m19"> Mark as done</label></div>
+  </div>
+
+  <div class="topic">
+    <h3>The answer formula</h3>
+    <div class="diagram"><p class="diagram-label">Use this for every question</p>
+<pre class="mermaid">
+flowchart LR
+  A["What: 1 sentence"] --> B["Why: the problem it solves"]
+  B --> C["How: key API or steps"]
+  C --> D["Trade-off: when NOT to use it"]
+  D --> E["Example: from your project"]
+</pre>
+    </div>
+  </div>
+
+  <div class="iq">
+    <h4>Rapid fire: core</h4>
+    <details class="qa"><summary>null=True vs blank=True?</summary><div class="a"><p><code class="i">null</code> affects the database (allows NULL). <code class="i">blank</code> affects validation (allows empty input). For strings, use <code class="i">blank=True</code> only.</p></div></details>
+    <details class="qa"><summary>What are Django's main built-in protections?</summary><div class="a"><p>CSRF tokens, XSS auto-escaping, SQL injection-safe ORM, clickjacking headers, password hashing, ALLOWED_HOSTS and security middleware/HSTS.</p></div></details>
+    <details class="qa"><summary>What is a context processor?</summary><div class="a"><p>A function that adds variables to every template context, such as <code class="i">request</code>, <code class="i">user</code> or <code class="i">messages</code>.</p></div></details>
+    <details class="qa"><summary>What does AppConfig.ready() do?</summary><div class="a"><p>It runs once when Django starts. It is used to import signal receivers and do startup setup.</p></div></details>
+    <details class="qa"><summary>What is a manager vs a QuerySet?</summary><div class="a"><p>A manager (<code class="i">objects</code>) is the entry point for database queries on a model. A QuerySet is the lazy, chainable query it returns. Custom QuerySet methods + <code class="i">as_manager()</code> give reusable, chainable filters.</p></div></details>
+    <details class="qa"><summary>Abstract vs proxy vs multi-table inheritance?</summary><div class="a"><p>Abstract: shared fields, no parent table. Proxy: same table, different Python behavior. Multi-table: separate tables joined by a one-to-one link, which is slower.</p></div></details>
+    <details class="qa"><summary>How do you handle a ForeignKey delete?</summary><div class="a"><p>With <code class="i">on_delete</code>: CASCADE, PROTECT, SET_NULL, SET_DEFAULT, RESTRICT, DO_NOTHING. Django 6.1 adds DB_CASCADE / DB_SET_NULL, which run in the database without signals.</p></div></details>
+  </div>
+
+  <div class="iq">
+    <h4>Rapid fire: ORM and performance</h4>
+    <details class="qa"><summary>What is the N+1 problem and how do you fix it?</summary><div class="a"><p>One query for the list plus one per row for related data. Fix it with <code class="i">select_related</code> (FK) or <code class="i">prefetch_related</code> (M2M/reverse), and lock it in with <code class="i">assertNumQueries</code>. Django 6.1 adds <code class="i">FETCH_PEERS</code>.</p></div></details>
+    <details class="qa"><summary>How do you update a counter safely?</summary><div class="a"><p><code class="i">update(count=F("count") + 1)</code> runs one atomic SQL UPDATE, so there's no read-then-write race.</p></div></details>
+    <details class="qa"><summary>How do you work with millions of rows?</summary><div class="a"><p><code class="i">iterator()</code> for memory, <code class="i">values_list</code> for speed, <code class="i">bulk_create</code>/<code class="i">bulk_update</code> in batches, background tasks for long jobs, and indexes on filter columns.</p></div></details>
+    <details class="qa"><summary>What does select_for_update do?</summary><div class="a"><p>It locks the selected rows (SELECT ... FOR UPDATE) until the transaction ends, so other transactions wait. It must be used inside <code class="i">atomic</code>.</p></div></details>
+  </div>
+
+  <div class="iq">
+    <h4>Rapid fire: APIs, scale, design</h4>
+    <details class="qa"><summary>How do you secure a DRF API?</summary><div class="a"><p>Authentication (JWT/session), a default <code class="i">IsAuthenticated</code> permission, object-level checks or scoped querysets, throttling, input validation with serializers, HTTPS only, and CORS limited to known origins.</p></div></details>
+    <details class="qa"><summary>Which pagination would you pick for a big feed?</summary><div class="a"><p>Cursor pagination. It is stable while rows are added and fast, because it doesn't need large OFFSET scans.</p></div></details>
+    <details class="qa"><summary>What's new in recent Django versions?</summary><div class="a"><ul><li>6.0: built-in Tasks framework, Content Security Policy, template partials, BigAutoField by default, Python 3.12+.</li><li>6.1: model fetch modes (FETCH_PEERS/FETCH_RAISE), database-level on_delete (DB_CASCADE), the MAILERS setting, calendar versioning (the next big release is called "Django 2028").</li><li>5.2 is the current LTS (until April 2028).</li></ul></div></details>
+    <details class="qa"><summary>Monolith or microservices for a new Django product?</summary><div class="a"><p>Start with a modular monolith: clear app boundaries plus a service layer. Split out a service only for a real need (independent scaling, a separate team, a different tech stack). Microservices add network, deployment and data-consistency costs.</p></div></details>
+    <details class="qa"><summary>Tell me about a production incident.</summary><div class="a"><p>Use STAR: Situation, Task, Action, Result. Cover how you detected it, debugged it (logs, metrics), fixed it, communicated, and what you changed to prevent it happening again. Show ownership and don't blame others.</p></div></details>
+  </div>
+
+  <div class="topic">
+    <h3>Cheat sheet: manage.py</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Command</th><th>Use</th></tr>
+      <tr><td><code class="i">startproject / startapp</code></td><td>Create a project / app</td></tr>
+      <tr><td><code class="i">makemigrations / migrate / showmigrations / sqlmigrate</code></td><td>Schema changes</td></tr>
+      <tr><td><code class="i">createsuperuser</code></td><td>Admin user</td></tr>
+      <tr><td><code class="i">shell</code> (auto-imports models in 5.2+)</td><td>Try ORM queries</td></tr>
+      <tr><td><code class="i">dbshell</code></td><td>Raw database console</td></tr>
+      <tr><td><code class="i">test</code> / <code class="i">pytest</code></td><td>Run tests</td></tr>
+      <tr><td><code class="i">check --deploy</code></td><td>Production security audit</td></tr>
+      <tr><td><code class="i">collectstatic</code></td><td>Gather static files</td></tr>
+      <tr><td><code class="i">dumpdata / loaddata</code></td><td>Export / import data (fixtures)</td></tr>
+    </table></div>
+  </div>
+
+  <div class="topic">
+    <h3>Cheat sheet: ORM lookups</h3>
+    <div class="table-wrap"><table>
+      <tr><th>Lookup</th><th>SQL idea</th></tr>
+      <tr><td><code class="i">exact / iexact</code></td><td>= / case-insensitive =</td></tr>
+      <tr><td><code class="i">contains / icontains</code></td><td>LIKE %x%</td></tr>
+      <tr><td><code class="i">in</code></td><td>IN (1, 2, 3)</td></tr>
+      <tr><td><code class="i">gt / gte / lt / lte</code></td><td>&gt; &gt;= &lt; &lt;=</td></tr>
+      <tr><td><code class="i">startswith / endswith</code></td><td>LIKE x% / %x</td></tr>
+      <tr><td><code class="i">range</code></td><td>BETWEEN</td></tr>
+      <tr><td><code class="i">isnull</code></td><td>IS NULL</td></tr>
+      <tr><td><code class="i">date / year / month</code></td><td>Date parts</td></tr>
+      <tr><td><code class="i">genre__name</code></td><td>JOIN across a relation</td></tr>
+    </table></div>
+  </div>
+
+  <div class="task">
+    <h4>Final practice</h4>
+    <ol>
+      <li>Answer 10 questions from this course out loud, 2 minutes each, using the answer formula.</li>
+      <li>Explain your Vidly Pro architecture in 3 minutes: layers, auth, caching, tasks, deployment.</li>
+      <li>Repeat once a week until it feels easy.</li>
+    </ol>
+  </div>
+</section>
+
+<!-- ============================ Sources ============================ -->
+<section class="mod sources" id="sources" data-short="Sources" data-group="More">
+  <div class="mod-head"><span class="mod-num">↗</span><h2>Sources</h2><p class="mod-sum">Researched October 2026. Official docs first.</p></div>
+  <ol>
+    <li><a href="https://www.djangoproject.com/download/" target="_blank" rel="noopener">Django download page: versions and support dates</a></li>
+    <li><a href="https://docs.djangoproject.com/en/stable/releases/6.1/" target="_blank" rel="noopener">Django 6.1 release notes</a></li>
+    <li><a href="https://docs.djangoproject.com/en/stable/releases/6.0/" target="_blank" rel="noopener">Django 6.0 release notes</a></li>
+    <li><a href="https://docs.djangoproject.com/en/stable/howto/deployment/checklist/" target="_blank" rel="noopener">Django deployment checklist</a></li>
+    <li><a href="https://www.django-rest-framework.org/api-guide/viewsets/" target="_blank" rel="noopener">DRF: ViewSets and routers</a></li>
+    <li><a href="https://django-rest-framework-simplejwt.readthedocs.io/" target="_blank" rel="noopener">Simple JWT docs</a></li>
+    <li><a href="https://docs.celeryq.dev/en/stable/django/first-steps-with-django.html" target="_blank" rel="noopener">Celery: First steps with Django</a></li>
+    <li><a href="https://github.com/HackSoftware/Django-Styleguide" target="_blank" rel="noopener">HackSoft Django Styleguide (services and selectors)</a></li>
+    <li><a href="https://forum.djangoproject.com/t/structuring-large-complex-django-projects-and-using-a-services-layer-in-django-projects/1487" target="_blank" rel="noopener">Django Forum: structuring large projects</a></li>
+    <li><a href="https://autodiscover.softcircles.com/blog/interviewing-django-developers-questions" target="_blank" rel="noopener">Interviewing Django developers: senior questions</a></li>
+    <li><a href="https://testgorilla.com/blog/django-interview-questions" target="_blank" rel="noopener">TestGorilla: Django interview questions</a></li>
+    <li><a href="https://iamajithkumar.medium.com/the-senior-python-django-interview-handbook-e4397a3f3e7f" target="_blank" rel="noopener">The Senior Python/Django Interview Handbook</a></li>
+    <li><a href="https://www.resumelens.org/blog/django/django-orm-select-related-vs-prefetch-related-and-the-n-1-problem" target="_blank" rel="noopener">select_related vs prefetch_related and N+1</a></li>
+    <li><a href="https://oneuptime.com/blog/post/2026-02-02-django-production-deployment/view" target="_blank" rel="noopener">Django production deployment guide (2026)</a></li>
+  </ol>
+</section>
+
+    </div>
+  </main>
+</div>
+
+<script>
+(function () {
+  var KEY = "django-fast-track-progress";
+  var mods = Array.prototype.slice.call(document.querySelectorAll("section.mod"));
+  var courseMods = mods.filter(function (m) { return m.id !== "sources"; });
+  var state = {};
+  try { state = JSON.parse(localStorage.getItem(KEY)) || {}; } catch (e) { state = {}; }
+
+  // Build syllabus rail
+  var list = document.getElementById("railList");
+  var lastGroup = "";
+  mods.forEach(function (m) {
+    var g = m.getAttribute("data-group");
+    if (g && g !== lastGroup) {
+      var gl = document.createElement("li"); gl.className = "group"; gl.textContent = g; list.appendChild(gl); lastGroup = g;
+    }
+    var li = document.createElement("li");
+    var a = document.createElement("a");
+    a.href = "#" + m.id;
+    a.dataset.target = m.id;
+    var n = m.querySelector(".mod-num");
+    a.innerHTML = '<span class="n"></span><span class="t"></span><span class="tick" aria-hidden="true"></span>';
+    a.querySelector(".n").textContent = n ? n.textContent : "";
+    a.querySelector(".t").textContent = m.getAttribute("data-short") || "";
+    li.appendChild(a); list.appendChild(li);
+  });
+
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {} }
+  function render() {
+    var done = 0;
+    courseMods.forEach(function (m) {
+      var on = !!state[m.id];
+      if (on) done++;
+      var cb = document.getElementById("done-" + m.id);
+      if (cb) cb.checked = on;
+      var link = list.querySelector('a[data-target="' + m.id + '"]');
+      if (link) link.classList.toggle("done", on);
+    });
+    var total = courseMods.length;
+    document.getElementById("barFill").style.width = (done / total * 100) + "%";
+    document.getElementById("progressLabel").textContent = done + " of " + total + " done";
+  }
+  courseMods.forEach(function (m) {
+    var cb = document.getElementById("done-" + m.id);
+    if (cb) cb.addEventListener("change", function () { state[m.id] = cb.checked; save(); render(); });
+  });
+  render();
+
+  // Active module highlight
+  if ("IntersectionObserver" in window) {
+    var io = new IntersectionObserver(function (entries) {
+      entries.forEach(function (en) {
+        if (en.isIntersecting) {
+          list.querySelectorAll("a").forEach(function (a) { a.classList.toggle("active", a.dataset.target === en.target.id); });
+        }
+      });
+    }, { rootMargin: "-30% 0px -60% 0px" });
+    mods.forEach(function (m) { io.observe(m); });
+  }
+
+  // Mobile menu
+  var rail = document.getElementById("rail");
+  var menuBtn = document.getElementById("menuBtn");
+  menuBtn.addEventListener("click", function () {
+    var open = rail.classList.toggle("open");
+    menuBtn.setAttribute("aria-expanded", open ? "true" : "false");
+  });
+  list.addEventListener("click", function (e) {
+    if (e.target.closest("a")) { rail.classList.remove("open"); menuBtn.setAttribute("aria-expanded", "false"); }
+  });
+
+  // Show / hide all answers
+  var answersBtn = document.getElementById("answersBtn");
+  var allOpen = false;
+  answersBtn.addEventListener("click", function () {
+    allOpen = !allOpen;
+    document.querySelectorAll("details.qa").forEach(function (d) { d.open = allOpen; });
+    answersBtn.textContent = allOpen ? "Hide all answers" : "Show all answers";
+  });
+
+  // Light code highlighting + copy buttons
+  var KW = /\b(def|class|return|from|import|if|else|elif|for|in|with|as|async|await|raise|try|except|lambda|None|True|False|and|or|not|pass|self)\b/g;
+  function esc(s) { return s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;"); }
+  document.querySelectorAll("pre.code").forEach(function (pre) {
+    var raw = pre.textContent.replace(/^\n/, "");
+    var html = raw.split("\n").map(function (line) {
+      var m = line.match(/(^|\s)(#.*)$/);
+      var codePart = m ? line.slice(0, m.index + m[1].length) : line;
+      var comment = m ? m[2] : "";
+      var out = esc(codePart).replace(KW, '<span class="k">$1</span>');
+      if (comment) out += '<span class="c">' + esc(comment) + "</span>";
+      return out;
+    }).join("\n");
+    pre.innerHTML = html;
+    var wrap = pre.parentElement;
+    if (wrap && wrap.classList.contains("code-wrap")) {
+      var b = document.createElement("button");
+      b.className = "copy"; b.type = "button"; b.textContent = "Copy";
+      b.addEventListener("click", function () {
+        var done = function () { b.textContent = "Copied"; setTimeout(function () { b.textContent = "Copy"; }, 1500); };
+        try {
+          navigator.clipboard.writeText(raw).then(done, function () { selectText(pre); });
+        } catch (e) { selectText(pre); }
+      });
+      wrap.appendChild(b);
+    }
+  });
+  function selectText(el) {
+    var r = document.createRange(); r.selectNodeContents(el);
+    var s = window.getSelection(); s.removeAllRanges(); s.addRange(r);
+  }
+})();
+</script>
+
+<!--claude-mermaid-runtime-begin:3477-->
+<style>.mermaid-diagram{margin-block:4px}.mermaid-diagram svg{display:block;margin:0 auto;max-width:100%;height:auto}</style>
+<script src="/_runtime/mermaid-11.16.1.min.js"></script>
+<script>(function(){
+var CFG={"palettes":{"light":{"surface":"#f4efe4","text":"#42392e","line":"#8a7f6d","border":"#7a6c52","bg":"#fffdf8"},"dark":{"surface":"#262b34","text":"#f2f3f5","line":"#a8adb8","border":"#9aa4b8","bg":"#1f232b"}}};
+if(typeof mermaid==='undefined')return;
+var pres=Array.prototype.slice.call(document.querySelectorAll('pre.mermaid')).filter(function(p){if(p.hasAttribute('data-claude-mermaid-claimed'))return false;p.setAttribute('data-claude-mermaid-claimed','1');return true;});
+if(!pres.length)return;
+var mq=window.matchMedia?window.matchMedia('(prefers-color-scheme: dark)'):null;
+var root=document.documentElement;
+var items=pres.map(function(pre){
+var mount=document.createElement('div');mount.className='mermaid-diagram';
+return {pre:pre,mount:mount,src:pre.textContent||''};
+});
+var seq=0;
+var renderGen=0;
+var lastKey='';
+function pageBg(fallback){
+var els=[document.body,document.documentElement];
+for(var i=0;i<els.length;i++){
+var c=els[i]&&getComputedStyle(els[i]).backgroundColor;
+if(c&&c!=='transparent'&&c!=='rgba(0, 0, 0, 0)')return c;
+}
+return fallback;
+}
+function render(){
+var theme=root.getAttribute('data-theme');
+var dark=theme==='dark'||(!!(mq&&mq.matches)&&theme!=='light');
+var pal=dark?CFG.palettes.dark:CFG.palettes.light;
+var bg=pageBg(pal.bg);
+var key=(dark?'d':'l')+'|'+bg;
+if(key===lastKey)return;
+lastKey=key;
+var gen=++renderGen;
+var font=getComputedStyle(document.body).fontFamily||'sans-serif';
+var nat={useMaxWidth:false};
+mermaid.initialize({
+startOnLoad:false,securityLevel:'strict',theme:'base',
+flowchart:nat,sequence:nat,er:nat,state:nat,class:nat,pie:nat,
+gantt:nat,journey:nat,timeline:nat,gitGraph:nat,mindmap:nat,xyChart:nat,
+quadrantChart:nat,sankey:nat,c4:nat,requirement:nat,block:nat,
+packet:nat,kanban:nat,architecture:nat,radar:nat,
+themeVariables:{background:bg,mainBkg:pal.surface,primaryColor:pal.surface,
+primaryTextColor:pal.text,lineColor:pal.line,primaryBorderColor:pal.border,
+nodeBorder:pal.border,clusterBorder:pal.border,edgeLabelBackground:bg,
+clusterBkg:'rgba(127,127,127,0.07)',titleColor:pal.text,
+darkMode:dark,rowOdd:bg,rowEven:'rgba(127,127,127,0.07)',
+attributeBackgroundColorOdd:bg,attributeBackgroundColorEven:'rgba(127,127,127,0.07)',
+fontSize:'16px',fontFamily:font},
+themeCSS:'.node rect, .node circle, .node polygon, .node path, .cluster rect { stroke-width: 2px; }'
+});
+items.forEach(function(it){
+var id='claude-mermaid-'+seq++;
+mermaid.render(id,it.src).then(function(r){
+if(gen!==renderGen)return;
+var prev=it.pre.previousElementSibling;
+if(prev&&prev.className==='mermaid-diagram'&&prev!==it.mount)return;
+it.mount.innerHTML=r.svg;
+if(!it.mount.parentNode)it.pre.parentNode.insertBefore(it.mount,it.pre);
+it.pre.style.display='none';
+},function(){
+var scratch=document.getElementById(id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+scratch=document.getElementById('d'+id);
+if(scratch)scratch.parentNode.removeChild(scratch);
+if(gen!==renderGen)return;
+if(it.mount.parentNode)it.mount.parentNode.removeChild(it.mount);
+it.pre.style.display='';
+});
+});
+}
+render();
+if(mq&&mq.addEventListener)mq.addEventListener('change',render);
+if(typeof MutationObserver!=='undefined')new MutationObserver(render).observe(root,{attributes:true,attributeFilter:['data-theme']});
+})();</script>
+<!--claude-mermaid-runtime-end-->
+
+</body></html>
