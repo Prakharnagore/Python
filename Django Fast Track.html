@@ -135,7 +135,10 @@ ul.tight { margin: 0; padding-left: 20px; display: grid; gap: 4px; max-width: 70
 
 .diagram { background: var(--bg); border: 1px solid var(--line); border-radius: 10px; padding: 14px; overflow-x: auto; min-width: 0; }
 .diagram-label { font: 600 .7rem var(--font-body); text-transform: uppercase; letter-spacing: .12em; color: var(--muted); margin: 0 0 8px; }
-pre.mermaid { margin: 0; background: transparent; text-align: center; font-family: var(--font-body); }
+pre.mermaid { margin: 0; background: transparent; text-align: center; font-family: var(--font-body); white-space: pre; }
+pre.mermaid:not([data-processed="true"]) { color: transparent; min-height: 120px; }
+pre.mermaid.failed { color: var(--ink); text-align: left; font: .82rem/1.5 var(--font-mono); }
+pre.mermaid svg { display: inline-block; height: auto; }
 
 pre.code {
   margin: 0; background: var(--code-bg); color: var(--code-fg); border-radius: 10px; padding: 14px 16px;
@@ -248,7 +251,7 @@ details.qa .a ul { margin: 0; padding-left: 18px; }
     <h3>The learning route</h3>
     <div class="diagram"><p class="diagram-label">Your path</p>
 <pre class="mermaid">
-flowchart LR
+flowchart TB
   A["Core: request flow"] --> B["ORM + performance"]
   B --> C["Migrations + transactions"]
   C --> D["Views, templates, forms"]
@@ -719,7 +722,7 @@ class Migration(migrations.Migration):
     <h3>Zero-downtime changes (expand and contract)</h3>
     <div class="diagram"><p class="diagram-label">Renaming or replacing a column safely in production</p>
 <pre class="mermaid">
-flowchart LR
+flowchart TB
   E1["1 Expand: add new column (nullable)"] --> E2["2 Deploy code that writes both"]
   E2 --> E3["3 Backfill old rows"]
   E3 --> E4["4 Deploy code that reads new"]
@@ -1196,7 +1199,7 @@ class MovieAdmin(admin.ModelAdmin):
     <h3>How a DRF request flows</h3>
     <div class="diagram"><p class="diagram-label">Each step can reject the request</p>
 <pre class="mermaid">
-flowchart LR
+flowchart TB
   R["Request"] --> A["Authentication: who?"]
   A --> P["Permissions: allowed?"]
   P --> T["Throttling: too many?"]
@@ -2047,7 +2050,7 @@ CMD ["gunicorn", "config.wsgi:application", "--bind", "0.0.0.0:8000", "--workers
     <h3>CI/CD pipeline</h3>
     <div class="diagram"><p class="diagram-label">Every push to main</p>
 <pre class="mermaid">
-flowchart LR
+flowchart TB
   P["git push"] --> L["Lint + type check"]
   L --> T["Tests + makemigrations --check"]
   T --> B["Build Docker image"]
@@ -2096,7 +2099,7 @@ flowchart LR
     <h3>The answer formula</h3>
     <div class="diagram"><p class="diagram-label">Use this for every question</p>
 <pre class="mermaid">
-flowchart LR
+flowchart TB
   A["What: 1 sentence"] --> B["Why: the problem it solves"]
   B --> C["How: key API or steps"]
   C --> D["Trade-off: when NOT to use it"]
@@ -2200,6 +2203,56 @@ flowchart LR
   </main>
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/mermaid@10.9.1/dist/mermaid.min.js"></script>
+<script>
+(function () {
+  // Render all diagrams with colors taken from the page's theme tokens
+  var blocks = Array.prototype.slice.call(document.querySelectorAll("pre.mermaid"));
+  blocks.forEach(function (b) { b.dataset.src = b.textContent.trim(); });
+
+  function token(name) { return getComputedStyle(document.documentElement).getPropertyValue(name).trim(); }
+  function isDark() {
+    var t = document.documentElement.getAttribute("data-theme");
+    if (t) return t === "dark";
+    return window.matchMedia && window.matchMedia("(prefers-color-scheme: dark)").matches;
+  }
+  function draw() {
+    if (!window.mermaid) { blocks.forEach(function (b) { b.classList.add("failed"); b.textContent = b.dataset.src; }); return; }
+    var ink = token("--ink"), surface = token("--surface"), soft = token("--accent-soft"), accent = token("--accent"), line = token("--line"), muted = token("--muted"), bg = token("--bg");
+    window.mermaid.initialize({
+      startOnLoad: false,
+      securityLevel: "strict",
+      theme: "base",
+      fontFamily: '"IBM Plex Sans", system-ui, sans-serif',
+      flowchart: { useMaxWidth: false, htmlLabels: true, curve: "basis", padding: 12, nodeSpacing: 36, rankSpacing: 40 },
+      sequence: { useMaxWidth: false, mirrorActors: false, actorMargin: 60 },
+      themeVariables: {
+        darkMode: isDark(), fontSize: "15px", background: bg,
+        primaryColor: soft, primaryTextColor: ink, primaryBorderColor: accent,
+        secondaryColor: surface, secondaryTextColor: ink, secondaryBorderColor: line,
+        tertiaryColor: surface, tertiaryTextColor: ink, tertiaryBorderColor: line,
+        lineColor: muted, textColor: ink, mainBkg: soft, nodeBorder: accent, nodeTextColor: ink,
+        clusterBkg: surface, clusterBorder: line, titleColor: ink, edgeLabelBackground: surface,
+        actorBkg: soft, actorBorder: accent, actorTextColor: ink, actorLineColor: muted,
+        signalColor: ink, signalTextColor: ink, labelBoxBkgColor: soft, labelBoxBorderColor: accent,
+        labelTextColor: ink, loopTextColor: ink, noteBkgColor: surface, noteTextColor: ink, noteBorderColor: line,
+        activationBkgColor: soft, activationBorderColor: accent, sequenceNumberColor: surface
+      }
+    });
+    blocks.forEach(function (b) { b.removeAttribute("data-processed"); b.classList.remove("failed"); b.textContent = b.dataset.src; });
+    window.mermaid.run({ nodes: blocks, suppressErrors: true }).then(function () {
+      blocks.forEach(function (b) { if (!b.querySelector("svg")) { b.classList.add("failed"); b.textContent = b.dataset.src; b.setAttribute("data-processed", "true"); } });
+    });
+  }
+  function start() { (document.fonts && document.fonts.ready ? document.fonts.ready : Promise.resolve()).then(draw); }
+  start();
+  if (window.matchMedia) {
+    var mq = window.matchMedia("(prefers-color-scheme: dark)");
+    if (mq.addEventListener) mq.addEventListener("change", draw);
+  }
+  new MutationObserver(draw).observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
+})();
+</script>
 <script>
 (function () {
   var KEY = "django-fast-track-progress";
