@@ -4,7 +4,7 @@ class Text(str):
 
 
 text = Text("Hello")
-print(text.duplicate())
+print(text.duplicate())  # HelloHellox
 
 
 class TrackableList(list):
@@ -15,3 +15,6 @@ class TrackableList(list):
 
 trackable_list = TrackableList()
 trackable_list.append("Hello")
+print(trackable_list)  # ['Hello']
+trackable_list.append("World")
+print(trackable_list)  # ['Hello', 'World']

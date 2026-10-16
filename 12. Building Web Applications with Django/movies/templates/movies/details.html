@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ movie.title }}{% endblock %}
+
+{% block content %}
+    <h1>{{ movie.title }}</h1>
+    <dl class="row">
+        <dt class="col-sm-3">Genre</dt>
+        <dd class="col-sm-9">{{ movie.genre }}</dd>
+
+        <dt class="col-sm-3">Release Year</dt>
+        <dd class="col-sm-9">{{ movie.release_year }}</dd>
+
+        <dt class="col-sm-3">Stock</dt>
+        <dd class="col-sm-9">{{ movie.number_in_stock }}</dd>
+
+        <dt class="col-sm-3">Daily Rate</dt>
+        <dd class="col-sm-9">{{ movie.daily_rate }}</dd>
+    </dl>
+    <a href="{% url 'movies:index' %}" class="btn btn-secondary">Back to Movies</a>
+{% endblock %}

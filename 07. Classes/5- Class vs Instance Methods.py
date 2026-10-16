@@ -14,3 +14,6 @@ class Point:
 
 
 point = Point.zero()
+print(point)  # <__main__.Point object at 0x7f5985490550>
+
+point.draw()  # Draws the point at (0, 0)

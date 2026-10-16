@@ -2,6 +2,7 @@
 
 point = {"x": 1, "y": 2}
 print(point)
+print(type(point))  # <class 'dict'>
 
 point = dict[str, int](x=1, y=2)
 print(point)

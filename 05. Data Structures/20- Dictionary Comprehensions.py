@@ -3,6 +3,8 @@
 values = [x*2 for x in range(5)]
 print(values)  # [0, 2, 4, 6, 8]
 
+# Full syntax
+# {key: value for item in iterable if condition}
 values = {x: x*2 for x in range(5)}
 print(values)  # {0: 0, 1: 2, 2: 4, 3: 6, 4: 8}
 

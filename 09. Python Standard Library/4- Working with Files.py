@@ -16,7 +16,6 @@ path.read_text()  # Return the text of the file
 path.write_text("print('Hello, World!')")  # Write text to file
 path.write_bytes(b"print('Hello, World!')")  # Write bytes to file
 
-
 # Copy file to another file
 source = Path("Ecommerce/__init__.py")
 target = Path("Ecommerce/init.py")

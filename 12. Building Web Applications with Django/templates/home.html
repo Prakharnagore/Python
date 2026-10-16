@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+
+{% block title %}Vidly{% endblock %}
+
+{% block content %}
+    <div class="p-5 mb-4 bg-light rounded-3">
+        <h1 class="display-5 fw-bold">Welcome to Vidly</h1>
+        <p class="lead">Browse our collection of {{ movie_count }} movie{{ movie_count|pluralize }} available to rent.</p>
+        <a href="{% url 'movies:index' %}" class="btn btn-primary btn-lg">Browse Movies</a>
+        <a href="/api/movies/" class="btn btn-outline-secondary btn-lg">View API</a>
+    </div>
+
+    {% if latest_movies %}
+        <h2 class="h4 mb-3">Latest Movies</h2>
+        <div class="row g-3">
+            {% for movie in latest_movies %}
+                <div class="col-md-4">
+                    <div class="card h-100">
+                        <div class="card-body">
+                            <h3 class="card-title h5">{{ movie.title }}</h3>
+                            <p class="card-text text-muted">{{ movie.genre }} · {{ movie.release_year }}</p>
+                            <a href="{% url 'movies:details' movie.id %}" class="card-link">Details</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+{% endblock %}
